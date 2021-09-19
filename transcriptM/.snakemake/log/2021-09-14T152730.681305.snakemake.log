@@ -1,0 +1,4 @@
+TypeError in line 33 of /lustre/work-lustre/microbiome/users/sternesp/transcriptM/transcriptM/pipe/Snakefile:
+threads() missing 1 required positional argument: 'threads'
+  File "/lustre/work-lustre/microbiome/users/sternesp/transcriptM/transcriptM/Snakefile", line 10, in <module>
+  File "/lustre/work-lustre/microbiome/users/sternesp/transcriptM/transcriptM/pipe/Snakefile", line 33, in <module>

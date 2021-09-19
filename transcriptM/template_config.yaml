@@ -1,0 +1,25 @@
+long_reads:
+    none
+long_read_type:
+    nanopore
+short_reads_1:
+    none
+short_reads_2:
+    none
+n_cores:
+    8
+max_memory:
+    32
+genome_dir:
+    none
+ref:
+    none
+gff:
+    none
+fasta_extension:
+    fna
+output:
+    none
+conda_prefix:
+     /lustre/work-lustre/microbiome/users/sternesp/conda/envs/
+
