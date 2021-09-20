@@ -1,0 +1,10 @@
+LICENSE.md
+README.md
+setup.py
+transcriptM/__init__.py
+transcriptM/transcriptM.py
+transcriptM.egg-info/PKG-INFO
+transcriptM.egg-info/SOURCES.txt
+transcriptM.egg-info/dependency_links.txt
+transcriptM.egg-info/entry_points.txt
+transcriptM.egg-info/top_level.txt

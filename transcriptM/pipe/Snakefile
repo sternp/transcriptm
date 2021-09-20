@@ -1,5 +1,3 @@
-#ruleorder: annotate > coverm
-
 onsuccess:
     print("transcriptM finished without error")
 
@@ -52,7 +50,7 @@ rule coverm:
     input:
         'annotate/done'
     output:
-        'coverm/done'
+        "coverm/done",
     conda:
         "../envs/coverm.yaml"
     threads:
@@ -86,5 +84,5 @@ rule detectm:
         gff = 'annotate/combined_reference.gff',
         detectm = os.path.join(workflow.basedir, "bin/detectm/detectm")
     shell:
-        "python {params.detectm} --bam {params.bam} --gff {params.gff} --measure_type count --output_directory detectm/detectm_count && "
+        "python {params.detectm} --bam {params.bam} --gff {params.gff} --measure_type count --output_directory detectm --force && "
         "touch detectm/done"

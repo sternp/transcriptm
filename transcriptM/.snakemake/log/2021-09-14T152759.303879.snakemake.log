@@ -1,4 +1,0 @@
-KeyError in line 51 of /lustre/work-lustre/microbiome/users/sternesp/transcriptM/transcriptM/pipe/Snakefile:
-'n_cores'
-  File "/lustre/work-lustre/microbiome/users/sternesp/transcriptM/transcriptM/Snakefile", line 10, in <module>
-  File "/lustre/work-lustre/microbiome/users/sternesp/transcriptM/transcriptM/pipe/Snakefile", line 51, in <module>
