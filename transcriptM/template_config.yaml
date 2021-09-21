@@ -1,7 +1,3 @@
-long_reads:
-    none
-long_read_type:
-    nanopore
 short_reads_1:
     none
 short_reads_2:
@@ -22,4 +18,11 @@ output:
     none
 conda_prefix:
      /lustre/work-lustre/microbiome/users/sternesp/conda/envs/
-
+human_db:
+    none
+silva_db:
+    none
+trimmomatic:
+    MINLEN:60 ILLUMINACLIP:/-SE.fa:2:30:10 SLIDINGWINDOW:4:20 MINLEN:50
+sequencer_source:
+    NexteraPE

@@ -19,7 +19,7 @@
 ###############################################################################
 from transcriptM.__init__ import __version__
 import transcriptM.config.config as Config
-__author__ = "Peter Sternes, Rhys Newell"
+__author__ = "Peter Sternes"
 __copyright__ = "Copyright 2021"
 __credits__ = ["Peter Sternes, Rhys Newell"]
 __license__ = "GPL3"
@@ -68,10 +68,10 @@ def phelp():
     print(
 """
                     ......:::::: transcriptM ::::::......
-           A  metatranscriptome bioinformatics pipeline
-
-        QC   - not currently built
-        pipe - full pipeline, excluding QC
+                 A  metatranscriptome bioinformatics pipeline
+                 
+        pipe - full pipeline. Raw reads -> TPM values per gene.
+        halfpipe - excludes read QC. Independently QCed reads -> TPM values per gene.[NOT BUILT YET]
 
 """
 )
@@ -101,7 +101,7 @@ def main():
                                           description='Mapping and read counting pipeline',
                                           formatter_class=CustomHelpFormatter,
                                           epilog='''
-                                ~ FULL PIPELINE (ex. QC) ~
+                                ~ FULL PIPELINE ~
     How to use pipe:
     
     transcriptM pipe ADD INFO HERE
@@ -115,42 +115,17 @@ def main():
         '-1', '--paired-reads-1',
         help='A space separated list of forwards read files to use for the binning process',
         dest='pe1',
-        nargs='*',
         default="none"
     )
 
     input_options.add_argument(
         '-2','--paired-reads-2',
-        help='A space separated list of forwards read files',
+        help='A space separated list of reverse read files',
         dest='pe2',
-        nargs='*',
         default="none"
     )
-
-    input_options.add_argument(
-        '-i','--interleaved',
-        help='A space separated list of interleaved read files',
-        dest='interleaved',
-        nargs='*',
-        default="none"
-    )
-
-    input_options.add_argument(
-        '-l', '--longreads',
-        help='A space separated list of interleaved read files',
-        dest='longreads',
-        nargs='*',
-        default="none"
-    )
-    input_options.add_argument(
-        '--longread-type',
-        help='Whether the longreads are oxford nanopore or pacbio',
-        dest='longread_type',
-        nargs=1,
-        default="nanopore",
-        choices=["nanopore", "pacbio"],
-    )     
     
+ 
     input_options.add_argument(
         '-g','--genome-dir',
         help='Directory containing FASTA files of each genome',
@@ -195,7 +170,7 @@ def main():
     
     input_options.add_argument(
         '-m', '--max-memory',
-        help='Maximum memory for available usage in Gigabytes',
+        help='Maximum memory for available usage in gigabytes, GB',
         dest='max_memory',
         default=32,
     )
@@ -232,7 +207,36 @@ def main():
         default="mamba",
         choices=["conda", "mamba"],
     )
-        
+    
+    input_options.add_argument(
+        '--human-db',
+        help='Location of a Bowtie2-formatted database of the human genome',
+        dest='human_db',
+        default="none"
+    )
+    
+    input_options.add_argument(
+        '--silva-db',
+        help='Location of a Bowtie2-formatted database of the Silva rRNA db',
+        dest='silva_db',
+        default="none"
+    )
+
+    input_options.add_argument(
+        '--trimmomatic',
+        help='Apply custom trimmomatic values.',
+        dest='trimmomatic',
+        default="MINLEN:60\ ILLUMINACLIP:/-SE.fa:2:30:10\ SLIDINGWINDOW:4:20\ MINLEN:50"
+    )
+
+    input_options.add_argument(
+        '--sequencer-source',
+        help='NexteraPE, TruSeq2, TruSeq3, none. ',
+        dest='sequencer_source',
+        default="NexteraPE"
+    )
+
+    
     ###########################################################################
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Parsing input ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
@@ -262,94 +266,22 @@ def main():
         if not os.path.exists(prefix):
             os.makedirs(prefix)
         
-        if args.interleaved == "none" and args.ref != 'none' and args.gff != 'none':
-            processor = transcriptM(args.pe1,
-                               args.pe2,
-                               args.longreads,
-                               args.longread_type,
-                               int(args.n_cores),
-                               int(args.max_memory),
-                               args.genome_dir,
-                               args.ref,
-                               args.gff,
-                               args.fasta_extension,
-                               args.output,
-                               args.conda_prefix,
-                               args)
-        elif args.pe2 == "none" and args.interleaved != "none" and args.ref != 'none'and args.gff != 'none':
-            processor = transcriptM(args.interleaved,
-                                args.pe2,
-                                args.longreads,
-                                args.longread_type,
-                                int(args.n_cores),
-                                int(args.max_memory),
-                                args.genome_dir,
-                                args.ref,
-                                args.gff,
-                                args.fasta_extension,
-                                args.output,
-                                args.conda_prefix,
-                                args)
-        elif args.longreads != "none" and args.ref == 'none'and args.gff == 'none':
-            processor = transcriptM(args.pe1,
-                                args.pe2,
-                                args.longreads,
-                                args.longread_type,
-                                int(args.n_cores),
-                                int(args.max_memory),
-                                args.genome_dir,
-                                args.ref,
-                                args.gff,
-                                args.fasta_extension,
-                                args.output,
-                                args.conda_prefix,
-                                args)
-        
-        elif args.interleaved == "none" and args.ref == 'none'and args.gff == 'none' :
-            processor = transcriptM(args.pe1,
-                               args.pe2,
-                               args.longreads,
-                               args.longread_type,
-                               int(args.n_cores),
-                               int(args.max_memory),
-                               args.genome_dir,
-                               args.ref,
-                               args.gff,
-                               args.fasta_extension,
-                               args.output,
-                               args.conda_prefix,
-                               args)
-        elif args.pe2 == "none" and args.interleaved != "none" and args.ref == 'none'and args.gff == 'none':
-            processor = transcriptM(args.interleaved,
-                                args.pe2,
-                                args.longreads,
-                                args.longread_type,
-                                int(args.n_cores),
-                                int(args.max_memory),
-                                args.genome_dir,
-                                args.ref,
-                                args.gff,
-                                args.fasta_extension,
-                                args.output,
-                                args.conda_prefix,
-                                args)
-        elif args.longreads != "none" and args.ref == 'none'and args.gff == 'none':
-            processor = transcriptM(args.pe1,
-                                args.pe2,
-                                args.longreads,
-                                args.longread_type,
-                                int(args.n_cores),
-                                int(args.max_memory),
-                                args.genome_dir,
-                                args.ref,
-                                args.gff,
-                                args.fasta_extension,
-                                args.output,
-                                args.conda_prefix,
-                                args)
-        else:
-            sys.exit("Missing any input read files...")
-
+        processor = transcriptM(args.pe1,
+                           args.pe2,
+                           int(args.n_cores),
+                           int(args.max_memory),
+                           args.genome_dir,
+                           args.ref,
+                           args.gff,
+                           args.fasta_extension,
+                           args.output,
+                           args.conda_prefix,
+                           args.human_db,
+                           args.silva_db,
+                           args.trimmomatic,
+                           args.sequencer_source,                           
+                           args)
+       
         processor.make_config()
         processor.run_workflow(workflow=args.workflow, cores=int(args.n_cores), dryrun=args.dryrun, conda_frontend=args.conda_frontend)
 
@@ -418,20 +350,20 @@ class transcriptM:
     def __init__(self,
                  pe1="none",
                  pe2="none",
-                 longreads="none",
-                 longread_type="nanopore",
                  n_cores=8,
                  max_memory=32,
                  genome_dir="none",
                  ref="none",
                  gff="none",
-                 fasta_extension="fna",
+                 fasta_extension="none",
                  output=".",
                  conda_prefix=Config.get_conda_path(),
+                 human_db = "none",
+                 silva_db = "none",
+                 trimmomatic = "MINLEN:60\ ILLUMINACLIP:/-SE.fa:2:30:10\ SLIDINGWINDOW:4:20\ MINLEN:50",
+                 sequencer_source = "NexteraPE",
                  args=None
                  ):
-        self.longreads = longreads
-        self.longread_type = longread_type
         self.pe1 = pe1
         self.pe2 = pe2
         self.threads = n_cores
@@ -442,6 +374,10 @@ class transcriptM:
         self.fasta_extension = fasta_extension
         self.output = output
         self.conda_prefix = conda_prefix
+        self.human_db = human_db
+        self.silva_db = silva_db
+        self.trimmomatic = trimmomatic
+        self.sequencer_source = sequencer_source
 
     def make_config(self):
         """
@@ -464,11 +400,9 @@ class transcriptM:
             conf = yaml.load(template_config)
 
         if self.pe1 != "none":
-            self.pe1 = [os.path.abspath(p) for p in self.pe1]
+            self.pe1 = self.pe1
         if self.pe2 != "none":
-            self.pe2 = [os.path.abspath(p) for p in self.pe2]
-        if self.longreads != "none":
-            self.longreads = [os.path.abspath(p) for p in self.longreads]
+            self.pe2 = self.pe2
         if self.genome_dir != "none":
             self.genome_dir = os.path.abspath(self.genome_dir)
         if self.ref != "none":
@@ -479,9 +413,16 @@ class transcriptM:
             self.output = os.path.abspath(self.output)
         if self.fasta_extension != "none":
             self.fasta_extension = str(self.fasta_extension)       
-          
-        conf["long_reads"] = self.longreads    
-        conf["long_read_type"] = self.longread_type
+        if self.human_db != "none":
+            self.human_db = os.path.abspath(self.human_db)
+        if self.silva_db != "none":
+            self.silva_db = os.path.abspath(self.silva_db)
+        if self.trimmomatic != "MINLEN:60\ ILLUMINACLIP:/-SE.fa:2:30:10\ SLIDINGWINDOW:4:20\ MINLEN:50":
+            self.trimmomatic = self.trimmomatic
+        if self.sequencer_source != "NexteraPE":
+            self.sequencer_source = self.sequencer_source
+            
+            
         conf["short_reads_1"] = self.pe1
         conf["short_reads_2"] = self.pe2
         conf["n_cores"] = self.threads
@@ -491,6 +432,10 @@ class transcriptM:
         conf["gff"] = self.gff
         conf["fasta_extension"] = self.fasta_extension
         conf["output"] = self.output
+        conf["human_db"] = self.human_db
+        conf["silva_db"] = self.silva_db
+        conf["trimmomatic"] = self.trimmomatic
+        conf["sequencer_source"] = self.sequencer_source
 
 
         with open(self.config, "w") as f:

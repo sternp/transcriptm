@@ -3,4 +3,4 @@ channels:
   - conda-forge
   - biobakery
 dependencies:
-  - kneaddata=0.1.0
+  - kneaddata=0.10.0

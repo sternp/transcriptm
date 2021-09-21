@@ -23,4 +23,8 @@ elif snakemake.config["genome_dir"] == "none" and snakemake.config["ref"] != "no
 
 elif snakemake.config["genome_dir"] == "none" and snakemake.config["ref"] == "none" and snakemake.config["gff"] == 'none':
 	subprocess.Popen(
-		"echo ERROR: Provide either 1\) directory of contigs/genomes to annotate, or 2\) a reference sequence file \(.fna\) and an annotation file \(.gff\)", shell=True).wait()
+		"echo ERROR: Provide either 1\) directory of contigs/genomes to annotate \(-g\), or 2\) a reference sequence file \(--ref\) \(.fna\) and an annotation file \(--gff\) \(.gff\)", shell=True).wait()
+
+elif snakemake.config["genome_dir"] != "none" and snakemake.config["ref"] != "none" or snakemake.config["gff"] != 'none':
+	subprocess.Popen(
+		"echo ERROR: Provide either 1\) directory of contigs/genomes to annotate \(-g\), or 2\) a reference sequence file \(--ref\) \(.fna\) and an annotation file \(--gff\) \(.gff\)", shell=True).wait()
