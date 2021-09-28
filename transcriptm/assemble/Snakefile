@@ -1,0 +1,69 @@
+ruleorder: all > qc > assemble
+
+onsuccess:
+    print("COMPLETE: transcriptM finished without error")
+
+onerror:
+    print("ERROR: transcriptM experienced an error")
+
+onstart:
+    import os
+    import sys
+
+    from snakemake.utils import logger, min_version
+
+    # minimum required snakemake version
+    min_version("6.5.3")
+    short_reads_1 = config["short_reads_1"]
+    short_reads_2 = config["short_reads_2"]
+    n_cores = config["n_cores"]
+    output = config["output"]
+    max_memory = config["max_memory"]
+    human_db = config["human_db"]
+    silva_db = config["silva_db"]
+    trimmomatic = config["trimmomatic"]
+    sequencer_source = config["sequencer_source"]
+
+rule all:
+    input:
+        "qc/done",
+        "assemble/done"
+    threads:
+        config["n_cores"]
+    resources:
+        mem_gb = config["max_memory"]
+
+rule qc:
+    input:
+    output:
+        "qc/done"
+    conda:
+        "../envs/qc.yaml"
+    threads:
+        config["n_cores"]
+    resources:
+        mem_gb = config["max_memory"]
+    params:
+    script:
+        "../scripts/qc.py"
+
+rule assemble:
+    input:
+        "qc/done"
+    output:
+        "assemble/done"
+    conda:
+        "../envs/assemble.yaml"
+    threads:
+        config["n_cores"]
+    resources:
+        mem_gb = config["max_memory"]
+    params:
+        qc_reads_1 = 'qc/clean_reads/*1.fastq',
+        qc_reads_2 = 'qc/clean_reads/*2.fastq',
+        n_cores = config["n_cores"],
+        output = config["output"],
+        max_memory = str(config["max_memory"])+'G'
+    shell:
+        "Trinity --seqType fq --left {params.qc_reads_1} --right {params.qc_reads_2} --CPU {params.n_cores} --output assemble/trinity --max_memory {params.max_memory} --full_cleanup && "
+        "touch assemble/done"

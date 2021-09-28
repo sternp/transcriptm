@@ -1,9 +1,22 @@
+Metadata-Version: 2.1
+Name: transcriptm
+Version: 0.0.1
+Summary: TranscriptM - metatranscriptome pipeline with metagenome contamination correction
+Home-page: UNKNOWN
+Author: Peter Sternes
+Author-email: peter.sternes@qut.edu.au
+License: GPL-3.0
+Platform: UNKNOWN
+Classifier: Topic :: Scientific/Engineering :: Bio-Informatics
+Description-Content-Type: text/markdown
+License-File: LICENSE.md
+
 # transcriptM
 Under development
 
 ## installation
 
-mamba env create -n transcriptm -f /home/sternesp/lustre-microbiome/users/sternesp/transcriptm/transcriptm.yaml
+mamba env create -n transcriptm -f /home/sternesp/lustre-microbiome/users/sternesp/transcriptM/transcriptM.yaml
 
 conda activate transcriptm
 
@@ -29,3 +42,5 @@ kneaddata_database --download human_transcriptome bowtie2 /lustre/work-lustre/mi
 These are already downloaded on the CMR server. If you wish to filter against these databases then they need to be specified by TranscriptM as below. You can specify as many of DBs as you want:
 transcriptm \
 --qc -db /lustre/work-lustre/microbiome/db/human_grch37_bowtie2 -db /lustre/work-lustre/microbiome/db/silva_rRNA_bowtie2 \
+
+

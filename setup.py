@@ -23,18 +23,18 @@ def get_version(relpath):
 
 
 setup(
-    name='transcriptM',
-    version=get_version("transcriptM/__init__.py"),
+    name='transcriptm',
+    version=get_version("transcriptm/__init__.py"),
 #    url='',
     license='GPL-3.0',
     author='Peter Sternes',
     author_email='peter.sternes@qut.edu.au',
-    description='transcriptM - metatranscriptome pipeline with metagenome contamination correction',
+    description='TranscriptM - metatranscriptome pipeline with metagenome contamination correction',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    packages=['transcriptM'],
+    packages=['transcriptm'],
     package_data={'': [
-            "transcriptM/*",
+            "transcriptm/*",
                        ]},
     data_files=[(".", ["README.md", "LICENSE.md"])],
     include_package_data=True,
@@ -43,7 +43,7 @@ setup(
     # install via conda: click, pandas, pyyaml, snakemake
     entry_points={
           'console_scripts': [
-              'transcriptM = transcriptM.transcriptM:main'
+              'transcriptm = transcriptm.transcriptm:main'
           ]
     },
     classifiers=["Topic :: Scientific/Engineering :: Bio-Informatics"],

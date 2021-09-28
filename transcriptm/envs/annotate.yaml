@@ -1,0 +1,6 @@
+channels:
+  - bioconda
+  - conda-forge
+  - biobakery
+dependencies:
+  - prokka=1.14.6
