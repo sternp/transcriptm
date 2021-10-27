@@ -1,4 +1,4 @@
-# transcriptM
+# TranscriptM
 Under development
 
 ## installation

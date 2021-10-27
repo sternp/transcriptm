@@ -1,10 +1,9 @@
-ruleorder: all > qc > annotate > coverm > detectm
 
 onsuccess:
-    print("COMPLETE: TranscriptM finished without error")
+    print("\u001b[42mCOMPLETE: TranscriptM successfuly finished\u001b[0m")
 
 onerror:
-    print("ERROR: TranscriptM experienced an error")
+    print("\u001b[41mERROR: TranscriptM failed\u001b[0m")
 
 onstart:
     import os
@@ -28,7 +27,7 @@ onstart:
     trimmomatic = config["trimmomatic"]
     sequencer_source = config["sequencer_source"]
     kingdom = config["kingdom"]
-
+    skip_qc = config["skip_qc"]
 
 rule all:
     input:
@@ -71,7 +70,6 @@ rule annotate:
     script:
         "../scripts/annotate.py"
 
-
 rule coverm:
     input:
         'annotate/done'
@@ -85,15 +83,14 @@ rule coverm:
         mem_gb = config["max_memory"]
     params:
         fna_file = 'annotate/combined_reference.fna',
-        qc_reads_1 = 'qc/clean_reads/*1.fastq',
-        qc_reads_2 = 'qc/clean_reads/*2.fastq',
+        qc_reads_1 = 'qc/clean_reads/R1/*R1.fastq*',
+        qc_reads_2 = 'qc/clean_reads/R2/*R2.fastq*',
         bam = os.path.join('coverm/*.bam')
     shell:
         "echo R1 = {params.qc_reads_1} && "
         "echo R2 = {params.qc_reads_2} && "
         "coverm make -r {params.fna_file} -1 {params.qc_reads_1} -2 {params.qc_reads_2} -t {threads} -o coverm && "
         "mv {params.bam} coverm/combined_reference.bam && "
-#        "samtools index coverm/combined_reference.bam && "
         "touch coverm/done"
 
 rule coverm_filter:
@@ -114,9 +111,10 @@ rule coverm_filter:
         --bam-files {params.bam} \
         --output-bam-files coverm_filter/combined_reference_filtered.bam \
         --threads {threads} \
-        --min-read-aligned-length 50 \
-        --min-read-percent-identity 0.95 \
+        --min-read-aligned-percent 0.95 \
+        --min-read-percent-identity 0.90 \
         --proper-pairs-only && "
+
         "samtools index coverm_filter/combined_reference_filtered.bam && "
         "touch coverm_filter/done"
 
@@ -136,5 +134,5 @@ rule detectm:
         gff = 'annotate/combined_reference.gff',
         detectm = os.path.join(workflow.basedir, "bin/detectm/detectm")
     shell:
-        "python {params.detectm} --bam {params.bam} --gff {params.gff} --measure_type count --output_directory detectm --force && "
+        "python {params.detectm} --bam {params.bam} --gff {params.gff} --measure_type count --output_directory detectm --force --cutoff 1 && "
         "touch detectm/done"

@@ -1,31 +1,35 @@
 import subprocess
 import os
 
-if snakemake.config["genome_dir"] != "none" and snakemake.config["ref"] == "none" and snakemake.config["gff"] == 'none':
-	genome_dir_path = os.path.join(snakemake.config["genome_dir"], "*." + snakemake.config["fasta_extension"])
-	gff_dir_path = os.path.join(snakemake.config["output"], "annotate","prokka_out")
-	gff_file_path = os.path.join(gff_dir_path,"*.gff")
-	kingdom = snakemake.config["kingdom"]
+genome_dir = snakemake.config["genome_dir"]
+fna  = snakemake.config["ref"]
+gff = snakemake.config["gff"]
+genome_dir_path = os.path.join(snakemake.config["genome_dir"], "*." + snakemake.config["fasta_extension"])
+kingdom = snakemake.config["kingdom"]
+
+if genome_dir != "none" and fna == "none" and gff == 'none':
 	subprocess.Popen(
+		"echo 'Running annotation (time consuming), please standby...' && "
 		"cat %s > annotate/combined_reference.fna && "
-		"prokka --metagenome --cpus %s --kingdom %s annotate/combined_reference.fna --outdir %s --force && "
-		"cp %s annotate/combined_reference.gff && "
+		"ls %s | parallel -j %s prokka --metagenome --cpus 1 --kingdom %s {} --outdir annotate/{/.}.prokka --force && "
+		"find . -name \'*.gff\' -exec cat {} + > annotate/out ; mv annotate/out annotate/combined_reference.gff && "
 		"touch annotate/done" %
-		(genome_dir_path, snakemake.threads, kingdom, gff_dir_path, gff_file_path), shell=True).wait()
+		(genome_dir_path, genome_dir_path, snakemake.threads, kingdom), shell=True).wait()
 
-elif snakemake.config["genome_dir"] == "none" and snakemake.config["ref"] != "none" and snakemake.config["gff"] != 'none':
-	fna_file_path = snakemake.config["ref"]
-	gff_file_path = snakemake.config["gff"]
+
+elif genome_dir == "none" and fna != "none" and gff != 'none':
 	subprocess.Popen(
-		"cp %s annotate/combined_reference.fna && "
-		"cp %s annotate/combined_reference.gff && "
+		"ln -s %s annotate/combined_reference.fna && "
+		"ln -s %s annotate/combined_reference.gff && "
 		"touch annotate/done" %
-		(fna_file_path, gff_file_path), shell=True).wait()
+		(fna, gff), shell=True).wait()
 
-elif snakemake.config["genome_dir"] == "none" and snakemake.config["ref"] == "none" and snakemake.config["gff"] == 'none':
+
+elif genome_dir == "none" and fna == "none" and gff == 'none':
 	subprocess.Popen(
 		"echo ERROR: Provide either 1\) directory of contigs/genomes to annotate \(-g\), or 2\) a reference sequence file \(--ref\) \(.fna\) and an annotation file \(--gff\) \(.gff\)", shell=True).wait()
 
-elif snakemake.config["genome_dir"] != "none" and snakemake.config["ref"] != "none" or snakemake.config["gff"] != 'none':
+
+elif genome_dir != "none" and fna != "none" or gff != 'none':
 	subprocess.Popen(
 		"echo ERROR: Provide either 1\) directory of contigs/genomes to annotate \(-g\), or 2\) a reference sequence file \(--ref\) \(.fna\) and an annotation file \(--gff\) \(.gff\)", shell=True).wait()

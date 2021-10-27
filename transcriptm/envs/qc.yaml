@@ -4,3 +4,4 @@ channels:
   - biobakery
 dependencies:
   - kneaddata=0.10.0
+  - bbmap=38.93

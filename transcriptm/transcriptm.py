@@ -27,8 +27,8 @@ __maintainer__ = "Peter Sternes"
 __email__ = "peter.sternes near qut.edu.au"
 __status__ = "Development"
 
-###############################################################################
-# System imports
+
+#%%################################ System imports ###########################
 import sys
 import argparse
 import logging
@@ -49,15 +49,14 @@ debug={1:logging.CRITICAL,
        4:logging.INFO,
        5:logging.DEBUG}
 
-#%%
-###############################################################################
-############################### - Exceptions - ################################
+#%%############################  Exceptions  ################################
+#############################################################################
 
 class BadTreeFileException(Exception):
     pass
 
-###############################################################################
-################################ - Functions - ################################
+################################  Functions  ################################
+#############################################################################
 def centerify(text, width=-1):
   lines = text.split('\n')
   width = max(map(len, lines)) if width == -1 else width
@@ -68,17 +67,19 @@ def phelp():
     print(
 """
                                  
-              _____                              _       _   __  __ 
-             |_   _| __ __ _ _ __  ___  ___ _ __(_)_ __ | |_|  \/  |
-               | || '__/ _` | '_ \/ __|/ __| '__| | '_ \| __| |\/| |
-               | || | | (_| | | | \__ \ (__| |  | | |_) | |_| |  | |
-               |_||_|  \__,_|_| |_|___/\___|_|  |_| .__/ \__|_|  |_|
-                                                  |_|               
+         _____                              _       _   __  __ 
+        |_   _| __ __ _ _ __  ___  ___ _ __(_)_ __ | |_|  \/  |
+          | || '__/ _` | '_ \/ __|/ __| '__| | '_ \| __| |\/| |
+          | || | | (_| | | | \__ \ (__| |  | | |_) | |_| |  | |
+          |_||_|  \__,_|_| |_|___/\___|_|  |_| .__/ \__|_|  |_|
+                                             |_|               
 
-                 A  metatranscriptome bioinformatics pipeline
+        A  metatranscriptome bioinformatics pipeline including metagenome contamination correction
                  
-        pipe - full pipeline. Raw reads -> TPM values per gene.
+        count - full pipeline. Raw reads -> counts per gene.
         assemble - performs read QC and assembly using Trinity.
+        
+        Type 'transcriptm {count,assemble} --help' for specific information
         
 
 """
@@ -87,210 +88,34 @@ def phelp():
         
 def main():
 
-    ############################ ~ Main Parser ~ ##############################
-    main_parser = argparse.ArgumentParser(prog='transcriptm',
-                                          formatter_class=CustomHelpFormatter,
-                                          add_help=False)
-    main_parser.add_argument('--version',
-                             action='version',
-                             version=__version__,
-                             help='Show version information.')
-    main_parser.add_argument('--verbosity',
-                             help='1 = critical, 2 = error, 3 = warning, 4 = info, 5 = debug. Default = 4 (logging)',
-                             type=int,
-                             default=4)
-    main_parser.add_argument('--log',
-                             help='Output logging information to file',
-                             default=False)
-    subparsers = main_parser.add_subparsers(help="--", dest='subparser_name')       
-        
-    ########################## ~ sub-parser ~ ###########################
-    input_options = subparsers.add_parser('pipe',
-                                          description='Mapping and read counting pipeline',
-                                          formatter_class=CustomHelpFormatter,
-                                          epilog='''
-                                ~ FULL PIPELINE ~
-    How to use pipe:
+    ############################  Main Parser  ##############################
+    #########################################################################
+    main_parser = argparse.ArgumentParser(
+        prog='transcriptm',
+        formatter_class=CustomHelpFormatter,
+        add_help=False)
     
-    transcriptm pipe ADD INFO HERE
+    main_parser.add_argument(
+        '--version',
+        action='version',
+        version=__version__,
+        help='Show version information.'
+        )
     
-    Specifying -g will concatenate a directory of genomes into a single ref sequence and annotate with prokka (time intensive)
-    Alternatively, you can use pre-contructed files via --ref <single_ref_seq.fna> and --gff <annotated_ref_seq.gff3>
+    main_parser.add_argument(
+        '--verbosity',
+        help='1 = critical, 2 = error, 3 = warning, 4 = info, 5 = debug. Default = 4 (logging)',
+        type=int,
+        default=4
+        )
     
-    ''')       
-        
-    input_options.add_argument(
-        '-1',
-        help='Forward FASTQ reads',
-        dest='pe1',
-        default="none",
-        metavar='<file>'
-    )
-
-    input_options.add_argument(
-        '-2',
-        help='Reverse FASTQ reads',
-        dest='pe2',
-        default="none",
-        metavar='<file>'
-    )
-    
- 
-    input_options.add_argument(
-        '-g','--genome-dir',
-        help='Directory containing FASTA files of each genome',
-        dest='genome_dir',
-        default='none',
-        metavar='<dir>'
-    )
-    
-    input_options.add_argument(
-        '--ref',
-        help='A single refernce .fna file of contigs/genomes',
-        dest='ref',
-        default='none',
-        metavar='<file>'
-    )
-    
-    input_options.add_argument(
-        '--gff',
-        help='GFF annotation of the reference sequence specified by --ref',
-        dest='gff',
-        default='none',
-        metavar='<file>'
-    )
-    
-    input_options.add_argument(
-        '-x', '--genome-fasta-extension',
-        help='File extension of genomes in the genome directory',
-        dest='fasta_extension',
-        default='fna',
-        metavar='<extension>'
-    )
-    
-    input_options.add_argument(
-        '--conda-prefix',
-        help='Path to the location of installed conda environments, or where to install new environments',
-        dest='conda_prefix',
-        default=Config.get_conda_path(),
-        metavar='<path>'
-    )     
-    
-    input_options.add_argument(
-        '-n', '--n-cores',
-        help='Maximum number of cores available for use.',
-        dest='n_cores',
-        default=8,
-        metavar='<num>'
-    )
-    
-    input_options.add_argument(
-        '-m', '--max-memory',
-        help='Maximum memory for available usage in gigabytes, GB',
-        dest='max_memory',
-        default=32,
-        metavar='<num>'
-    )
-    
-    input_options.add_argument(
-        '-o', '--output',
-        help='Output directory',
-        dest='output',
-        default='./',
-        metavar='<dir>'
-    )
-    
-    input_options.add_argument(
-        '-w', '--workflow',
-        help='Main workflow to run',
-        dest='workflow',
-        default='pipe',
-        metavar='<type>'
-    )
-    
-    input_options.add_argument(
-        '--dry-run',
-        help='Perform snakemake dry run, tests workflow order and conda environments',
-        type=str2bool,
-        nargs='?',
-        const=True,
-        dest='dryrun',
+    main_parser.add_argument(
+        '--log',
+        help='Output logging information to file',
         default=False
-    )
+        )     
     
-    input_options.add_argument(
-        '--conda-frontend',
-        help='Which conda frontend to use',
-        dest='conda_frontend',
-        nargs=1,
-        default="mamba",
-        choices=["conda", "mamba"],
-        metavar='<type>'
-    )
-    
-    input_options.add_argument(
-        '--human-db',
-        help='Location of a Bowtie2-formatted database of the human genome',
-        dest='human_db',
-        default="none",
-        metavar='<dir>'
-    )
-    
-    input_options.add_argument(
-        '--silva-db',
-        help='Location of a Bowtie2-formatted database of the Silva rRNA db',
-        dest='silva_db',
-        default="none",
-        metavar='<dir>'
-    )
-
-    input_options.add_argument(
-        '--other-db',
-        help='Location of a Bowtie2-formatted database of your choice',
-        dest='other_db',
-        default="none",
-        metavar='<dir>'
-    )
-
-    input_options.add_argument(
-        '--trimmomatic',
-        help='Apply custom trimmomatic values.',
-        dest='trimmomatic',
-        default="MINLEN:60\ ILLUMINACLIP:/-SE.fa:2:30:10\ SLIDINGWINDOW:4:20\ MINLEN:50",
-        metavar='<options>'
-    )
-
-    input_options.add_argument(
-        '--sequencer-source',
-        help='NexteraPE, TruSeq2, TruSeq3, none. ',
-        dest='sequencer_source',
-        default="NexteraPE",
-        metavar='<type>'
-    )
-
-    input_options.add_argument(
-        '--kingdom',
-        help='For use in Prokka when constructing & annotating a new reference from .fna files',
-        dest='kingdom',
-        default="Bacteria",
-        choices=["Archaea", "Bacteria","Mitochondria","Viruses"],
-        metavar='<type>'
-    )
-
-########################## ~ sub-parser ~ ###########################
-    input_options = subparsers.add_parser('assemble',
-                                          description='Read QC and de novo assembly pipeline',
-                                          formatter_class=CustomHelpFormatter,
-                                          epilog='''
-                                ~ DE NOVO ASSEMBLY ~
-    How to use assemble:
-    
-    transcriptm assemble ADD INFO HERE
-    
-    
-    ''')       
-        
-    input_options.add_argument(
+    main_parser.add_argument(
         '-1',
         help='Forward FASTQ reads',
         dest='pe1',
@@ -298,7 +123,7 @@ def main():
         metavar='<file1>'
     )
 
-    input_options.add_argument(
+    main_parser.add_argument(
         '-2',
         help='Reverse FASTQ reads',
         dest='pe2',
@@ -306,39 +131,7 @@ def main():
         metavar='<file2>'
     )
 
-    input_options.add_argument(
-        '-g','--genome-dir',
-        help=argparse.SUPPRESS,
-        dest='genome_dir',
-        default='none',
-        metavar='<dir>'
-    )
-    
-    input_options.add_argument(
-        '--ref',
-        help=argparse.SUPPRESS,
-        dest='ref',
-        default='none',
-        metavar='<file>'
-    )
-    
-    input_options.add_argument(
-        '--gff',
-        help=argparse.SUPPRESS,
-        dest='gff',
-        default='none',
-        metavar='<file>'
-    )
-    
-    input_options.add_argument(
-        '-x', '--genome-fasta-extension',
-        help=argparse.SUPPRESS,
-        dest='fasta_extension',
-        default='fna',
-        metavar='<extension>'
-    )
-    
-    input_options.add_argument(
+    main_parser.add_argument(
         '--conda-prefix',
         help='Path to the location of installed conda environments, or where to install new environments',
         dest='conda_prefix',
@@ -346,7 +139,7 @@ def main():
         metavar='<path>'
     )     
     
-    input_options.add_argument(
+    main_parser.add_argument(
         '-n', '--n-cores',
         help='Maximum number of cores available for use.',
         dest='n_cores',
@@ -354,7 +147,7 @@ def main():
         metavar='<num>'
     )
     
-    input_options.add_argument(
+    main_parser.add_argument(
         '-m', '--max-memory',
         help='Maximum memory for available usage in gigabytes, GB',
         dest='max_memory',
@@ -362,23 +155,15 @@ def main():
         metavar='<num>'
     )
     
-    input_options.add_argument(
+    main_parser.add_argument(
         '-o', '--output',
         help='Output directory',
         dest='output',
         default='./',
         metavar='<dir>'
     )
-    
-    input_options.add_argument(
-        '-w', '--workflow',
-        help='Main workflow to run',
-        dest='workflow',
-        default='assemble',
-        metavar='<type>'
-    )
-    
-    input_options.add_argument(
+        
+    main_parser.add_argument(
         '--dry-run',
         help='Perform snakemake dry run, tests workflow order and conda environments',
         type=str2bool,
@@ -388,7 +173,7 @@ def main():
         default=False
     )
     
-    input_options.add_argument(
+    main_parser.add_argument(
         '--conda-frontend',
         help='Which conda frontend to use',
         dest='conda_frontend',
@@ -398,15 +183,15 @@ def main():
         metavar='<type>'
     )
     
-    input_options.add_argument(
+    main_parser.add_argument(
         '--human-db',
-        help='Location of a Bowtie2-formatted database of the human genome',
+        help='Location of a Bowtie2-formatted database of the human genome or transcriptome',
         dest='human_db',
         default="none",
         metavar='<dir>'
     )
     
-    input_options.add_argument(
+    main_parser.add_argument(
         '--silva-db',
         help='Location of a Bowtie2-formatted database of the Silva rRNA db',
         dest='silva_db',
@@ -414,7 +199,7 @@ def main():
         metavar='<dir>'
     )
     
-    input_options.add_argument(
+    main_parser.add_argument(
         '--other-db',
         help='Location of a Bowtie2-formatted database of your choice',
         dest='other_db',
@@ -422,36 +207,121 @@ def main():
         metavar='<dir>'
     )
 
-    input_options.add_argument(
+    main_parser.add_argument(
         '--trimmomatic',
-        help='Apply custom trimmomatic values.',
+        help='Apply custom trimmomatic values',
         dest='trimmomatic',
-        default="MINLEN:60\ ILLUMINACLIP:/-SE.fa:2:30:10\ SLIDINGWINDOW:4:20\ MINLEN:50",
+        default='SLIDINGWINDOW:4:20\ MINLEN:50',
         metavar='<options>'
     )
 
-    input_options.add_argument(
+    main_parser.add_argument(
         '--sequencer-source',
-        help='NexteraPE, TruSeq2, TruSeq3, none. ',
+        help='NexteraPE, TruSeq2, TruSeq3, none',
         dest='sequencer_source',
-        default="NexteraPE",
+        default="TruSeq3",
         metavar='<type>'
     )
 
-    input_options.add_argument(
-        '--kingdom',
+    main_parser.add_argument(
+        '--skip-qc',
+        help='Skip the read QC step',
+        dest='skip_qc',
+        action='store_true',
+        default=False
+    )
+
+
+    subparsers = main_parser.add_subparsers()
+    
+      
+    ##########################  sub-parser  ###########################
+    parser_count = subparsers.add_parser('count',
+                                        parents=[main_parser],
+                                        formatter_class=CustomHelpFormatter,
+                                        add_help=True, description='''
+                                        
+                                ~ FULL PIPELINE - QC, mapping and read counting pipeline ~
+    How to use count:
+    
+    transcriptm count ADD INFO HERE
+    
+    Specifying -g will concatenate a directory of genomes into a single ref sequence and annotate with prokka (time intensive)
+    Alternatively, you can use pre-contructed files via --ref <single_ref_seq.fna> and --gff <annotated_ref_seq.gff3>''')      
+    
+    parser_count.add_argument(
+        '-w', '--workflow',
         help=argparse.SUPPRESS,
-        dest='kingdom',
-        default="none",
-        choices=["Archaea", "Bacteria","Mitochondria","Viruses"],
-        metavar='<type>'
+        dest='workflow',
+        default='count'
+    )  
+    
+    parser_count.add_argument(
+        '-g','--genome-dir',
+        help='Directory containing FASTA files of each genome',
+        dest='genome_dir',
+        default='none',
+        metavar='<dir>'
     )
     
-    ###########################################################################
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Parsing input ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-    if (len(sys.argv) == 1 or sys.argv[1] == '-h' or sys.argv[1] == '--help'):
+    parser_count.add_argument(
+        '--ref',
+        help='A single refernce .fna file of contigs/genomes',
+        dest='ref',
+        default='none',
+        metavar='<file>'
+    )
+    
+    parser_count.add_argument(
+        '--gff',
+        help='GFF annotation of the reference sequence specified by --ref',
+        dest='gff',
+        default='none',
+        metavar='<file>'
+    )
+    
+    parser_count.add_argument(
+        '-x', '--genome-fasta-extension',
+        help='File extension of genomes in the genome directory',
+        dest='fasta_extension',
+        default='fna',
+        metavar='<extension>'
+    )    
+    
+    parser_count.add_argument(
+        '--kingdom',
+        help='For use in Prokka when constructing & annotating a new reference from .fna files',
+        dest='kingdom',
+        default="Bacteria",
+        choices=["Archaea", "Bacteria","Mitochondria","Viruses"],
+        metavar='<type>'
+    )    
+
+    
+    ##########################  sub-parser  ###########################
+    parser_assemble = subparsers.add_parser('assemble',
+                                        parents=[main_parser],
+                                        formatter_class=CustomHelpFormatter,
+                                        description='''
+                                          
+                                ~ DE NOVO ASSEMBLY - Read QC and de novo assembly pipeline ~
+    How to use assemble:
+    
+    transcriptm assemble ADD INFO HERE
+    
+    
+    ''')       
+    
+    parser_assemble.add_argument(
+        '-w', '--workflow',
+        help=argparse.SUPPRESS,
+        dest='workflow',
+        default='assemble'
+    )      
+
+    
+    ############################## Parsing input ##############################
+    if (len(sys.argv) == 1 or len(sys.argv) == 2 or sys.argv[1] == '-h' or sys.argv[1] == '--help'):
         phelp()
     else:
         args = main_parser.parse_args()
@@ -476,25 +346,39 @@ def main():
         if not os.path.exists(prefix):
             os.makedirs(prefix)
         
+        #fill-in Namespace for attributes which only appear in specific subparsers
+        params=['pe1', 'pe2', 'n_cores', 'max_memory', 'genome_dir', 'ref', 'gff', 'fasta_extension', 
+                'output', 'conda_prefix', 'human_db', 'silva_db', 'trimmomatic', 'sequencer_source', 
+                'kingdom', 'workflow', 'other_db', 'skip_qc']
+        for i in params:
+            try:
+                getattr(args, i)
+            except AttributeError:
+                e = 'args.' + i + ' = \'none\''
+                exec(e)
+            else:
+                pass   
+        
         processor = transcriptm(args.pe1,
-                           args.pe2,
-                           int(args.n_cores),
-                           int(args.max_memory),
-                           args.genome_dir,
-                           args.ref,
-                           args.gff,
-                           args.fasta_extension,
-                           args.output,
-                           args.conda_prefix,
-                           args.human_db,
-                           args.silva_db,
-                           args.trimmomatic,
-                           args.sequencer_source,
-                           args.kingdom,
-                           args.workflow,
-                           args.other_db,
-                           args)
-       
+                                args.pe2,
+                                int(args.n_cores),
+                                int(args.max_memory),
+                                args.genome_dir,
+                                args.ref,
+                                args.gff,
+                                args.fasta_extension,
+                                args.output,
+                                args.conda_prefix,
+                                args.human_db,
+                                args.silva_db,
+                                args.trimmomatic,
+                                args.sequencer_source,
+                                args.kingdom,
+                                args.workflow,
+                                args.other_db,
+                                args.skip_qc,
+                                args)
+
         processor.make_config()
         processor.run_workflow(workflow=args.workflow, cores=int(args.n_cores), dryrun=args.dryrun, conda_frontend=args.conda_frontend)
 
@@ -529,8 +413,9 @@ def update_config(config):
 
     return default_config
 
+
+#################################  Classes  ###################################
 ###############################################################################
-################################ - Classes - ##################################
 
 class CustomHelpFormatter(argparse.HelpFormatter):
     def _split_lines(self, text, width):
@@ -574,11 +459,12 @@ class transcriptm:
                  conda_prefix=Config.get_conda_path(),
                  human_db = "none",
                  silva_db = "none",
-                 trimmomatic = "MINLEN:60\ ILLUMINACLIP:/-SE.fa:2:30:10\ SLIDINGWINDOW:4:20\ MINLEN:50",
-                 sequencer_source = "NexteraPE",
+                 trimmomatic = "SLIDINGWINDOW:4:20\ MINLEN:50",
+                 sequencer_source = "TruSeq3",
                  kingdom="Bacteria",
                  workflow="none",
                  other_db="none",
+                 skip_qc=False,
                  args=None
                  ):
         self.pe1 = pe1
@@ -598,6 +484,7 @@ class transcriptm:
         self.kingdom = kingdom
         self.workflow = workflow
         self.other_db = other_db
+        self.skip_qc = skip_qc
 
     def make_config(self):
         """
@@ -620,9 +507,9 @@ class transcriptm:
             conf = yaml.load(template_config)
 
         if self.pe1 != "none":
-            self.pe1 = self.pe1
+            self.pe1 = os.path.abspath(self.pe1)
         if self.pe2 != "none":
-            self.pe2 = self.pe2
+            self.pe2 = os.path.abspath(self.pe2)
         if self.genome_dir != "none":
             self.genome_dir = os.path.abspath(self.genome_dir)
         if self.ref != "none":
@@ -637,16 +524,18 @@ class transcriptm:
             self.human_db = os.path.abspath(self.human_db)
         if self.silva_db != "none":
             self.silva_db = os.path.abspath(self.silva_db)
-        if self.trimmomatic != "MINLEN:60\ ILLUMINACLIP:/-SE.fa:2:30:10\ SLIDINGWINDOW:4:20\ MINLEN:50":
+        if self.trimmomatic != "SLIDINGWINDOW:4:20\ MINLEN:50":
             self.trimmomatic = self.trimmomatic
-        if self.sequencer_source != "NexteraPE":
+        if self.sequencer_source != "TruSeq3":
             self.sequencer_source = self.sequencer_source
         if self.kingdom != "Bacteria":
             self.kingdom = self.kingdom
         if self.workflow != "none":
             self.workflow = self.workflow
         if self.other_db != "none":
-            self.other_db = self.other_db   
+            self.other_db = self.other_db
+        if self.skip_qc != False:
+            self.skip_qc = self.skip_qc  
             
             
         conf["short_reads_1"] = self.pe1
@@ -665,6 +554,7 @@ class transcriptm:
         conf["kingdom"] = self.kingdom
         conf["workflow"] = self.workflow
         conf["other_db"] = self.other_db
+        conf["skip_qc"] = self.skip_qc
 
         with open(self.config, "w") as f:
             yaml.dump(conf, f)
@@ -677,7 +567,7 @@ class transcriptm:
         load_configfile(self.config)
 
 
-    def run_workflow(self, workflow="pipe", cores=8, profile=None, dryrun=False, conda_frontend="mamba", snakemake_args = ""):
+    def run_workflow(self, workflow="count", cores=8, profile=None, dryrun=False, conda_frontend="mamba", snakemake_args = ""):
         """Runs the transcriptm pipeline
         By default all steps are executed
         Needs a config-file which is generated by given inputs.

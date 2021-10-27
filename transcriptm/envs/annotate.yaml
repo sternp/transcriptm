@@ -4,3 +4,5 @@ channels:
   - biobakery
 dependencies:
   - prokka=1.14.6
+  - agat=0.8.0
+  - parallel=20210822

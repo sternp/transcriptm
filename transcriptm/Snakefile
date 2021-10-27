@@ -1,14 +1,14 @@
 from snakemake.utils import min_version
 min_version("6.5.3")
 
-if config["workflow"] == "pipe":
-    module pipe:
-        snakefile: "pipe/Snakefile"
+if config["workflow"] == "count":
+    module count:
+        snakefile: "count/Snakefile"
         config: config
 
-    use rule * from pipe as *
+    use rule * from count as *
 
-if config["workflow"] == "assemble":
+elif config["workflow"] == "assemble":
     module assemble:
         snakefile: "assemble/Snakefile"
         config: config
@@ -16,4 +16,4 @@ if config["workflow"] == "assemble":
     use rule * from assemble as *
 
 else:
-	pass
+	print('Specify a workflow')

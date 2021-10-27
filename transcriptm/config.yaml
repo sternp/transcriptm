@@ -25,10 +25,12 @@ silva_db:
 trimmomatic:
     MINLEN:60 ILLUMINACLIP:/-SE.fa:2:30:10 SLIDINGWINDOW:4:20 MINLEN:50
 sequencer_source:
-    NexteraPE
+    TruSeq3-PE
 kingdom:
     none
 workflow:
-    pipe
+    count
 other_db:
     none
+skip_qc:
+    false

@@ -11,12 +11,12 @@ Classifier: Topic :: Scientific/Engineering :: Bio-Informatics
 Description-Content-Type: text/markdown
 License-File: LICENSE.md
 
-# transcriptM
+# TranscriptM
 Under development
 
 ## installation
 
-mamba env create -n transcriptm -f /home/sternesp/lustre-microbiome/users/sternesp/transcriptM/transcriptM.yaml
+mamba env create -n transcriptm -f /home/sternesp/lustre-microbiome/users/sternesp/transcriptm/transcriptm.yaml
 
 conda activate transcriptm
 
