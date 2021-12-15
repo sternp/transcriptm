@@ -1,6 +1,6 @@
 
 onsuccess:
-    print("\u001b[42mCOMPLETE: TranscriptM successfuly finished\u001b[0m")
+    print("\u001b[42mCOMPLETE: TranscriptM successfully finished\u001b[0m")
 
 onerror:
     print("\u001b[41mERROR: TranscriptM failed\u001b[0m")
@@ -35,6 +35,7 @@ rule all:
         "annotate/done",
         "coverm/done",
         "coverm_filter/done",
+#        "estimate_contam/done",
         "detectm/done"
     threads:
         config["n_cores"]
@@ -113,18 +114,42 @@ rule coverm_filter:
         --threads {threads} \
         --min-read-aligned-percent 0.95 \
         --min-read-percent-identity 0.90 \
-        --proper-pairs-only && "
+        --proper-pairs-only \
+        --exclude-supplementary && "
 
         "samtools index coverm_filter/combined_reference_filtered.bam && "
         "touch coverm_filter/done"
 
+#rule estimate_contam:
+#    input:
+#        'coverm_filter/done'
+#    output:
+#        "estimate_contam/done"
+#    conda:
+#        "../envs/coverm.yaml"
+#    threads:
+#        config["n_cores"]
+#    resources:
+#        mem_gb = config["max_memory"]
+#    params:
+#        bam = 'coverm_filter/combined_reference_filtered.bam',
+#        gff = 'annotate/combined_reference.gff'
+#    shell:
+#        "echo 'Estimating gDNA contamination... && '"
+#        "bedtools coverage -b {params.bam} -a {params.gff} -hist | sed '/all/!d' > estimate_contam/coverage_count && "
+#        "awk '{{print $3 $2}}' estimate_contam/coverage_count > tempa && "
+#        "awk '{{while ($1-- > 0) print $2}}' tempa | nl | sed 's/  *//g' > estimate_contam/temp1 && "
+#        "(echo \"cover\" && cat estimate_contam/temp1) > estimate_contam/temp2 && mv estimate_contam/temp2 estimate_contam/density_plot_values && "
+#        "rm estimate_contam/temp1 estimate_contam/temp2 && "
+#        "touch estimate_contam/done"
+
 rule detectm:
     input:
-        'coverm_filter/done'
+        "coverm_filter/done"
     output:
         'detectm/done'
     conda:
-        "../envs/detectm.yaml"
+        '../envs/detectm.yaml'
     threads:
         config["n_cores"]
     resources:
@@ -134,5 +159,5 @@ rule detectm:
         gff = 'annotate/combined_reference.gff',
         detectm = os.path.join(workflow.basedir, "bin/detectm/detectm")
     shell:
-        "python {params.detectm} --bam {params.bam} --gff {params.gff} --measure_type count --output_directory detectm --force --cutoff 1 && "
+        "python {params.detectm} --bam {params.bam} --gff {params.gff} --output_directory detectm --force --cutoff 1 && "
         "touch detectm/done"

@@ -7,3 +7,4 @@ dependencies:
   - dashing
   - fastani
   - samtools = 1.13
+  - bedtools
