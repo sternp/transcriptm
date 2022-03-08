@@ -1,4 +1,3 @@
-
 onsuccess:
     print("\u001b[42mCOMPLETE: TranscriptM successfully finished\u001b[0m")
 
@@ -35,8 +34,9 @@ rule all:
         "annotate/done",
         "coverm/done",
         "coverm_filter/done",
-#        "estimate_contam/done",
-        "detectm/done"
+        "detect_contam/done",
+        "filter_contam/done",
+        "feature_count/done"
     threads:
         config["n_cores"]
     resources:
@@ -52,7 +52,8 @@ rule qc:
         config["n_cores"]
     resources:
         mem_gb = config["max_memory"]
-    params:
+    message:
+        "Performing read QC..."
     script:
         "../scripts/qc.py"
 
@@ -67,7 +68,8 @@ rule annotate:
         config["n_cores"]
     resources:
         mem_gb = config["max_memory"]
-    params:
+    message:
+        "Creating reference .fna and .gff files..."
     script:
         "../scripts/annotate.py"
 
@@ -84,9 +86,11 @@ rule coverm:
         mem_gb = config["max_memory"]
     params:
         fna_file = 'annotate/combined_reference.fna',
-        qc_reads_1 = 'qc/clean_reads/R1/*R1.fastq*',
-        qc_reads_2 = 'qc/clean_reads/R2/*R2.fastq*',
+        qc_reads_1 = 'qc/clean_reads/R1/*',
+        qc_reads_2 = 'qc/clean_reads/R2/*',
         bam = os.path.join('coverm/*.bam')
+    message:
+        "Aligning reads to reference sequences..."
     shell:
         "echo R1 = {params.qc_reads_1} && "
         "echo R2 = {params.qc_reads_2} && "
@@ -107,6 +111,8 @@ rule coverm_filter:
         mem_gb = config["max_memory"]
     params:
         bam = 'coverm/combined_reference.bam'
+    message:
+        "Filtering read alignments..."
     shell:
         "coverm filter \
         --bam-files {params.bam} \
@@ -120,44 +126,111 @@ rule coverm_filter:
         "samtools index coverm_filter/combined_reference_filtered.bam && "
         "touch coverm_filter/done"
 
-#rule estimate_contam:
-#    input:
-#        'coverm_filter/done'
-#    output:
-#        "estimate_contam/done"
-#    conda:
-#        "../envs/coverm.yaml"
-#    threads:
-#        config["n_cores"]
-#    resources:
-#        mem_gb = config["max_memory"]
-#    params:
-#        bam = 'coverm_filter/combined_reference_filtered.bam',
-#        gff = 'annotate/combined_reference.gff'
-#    shell:
-#        "echo 'Estimating gDNA contamination... && '"
-#        "bedtools coverage -b {params.bam} -a {params.gff} -hist | sed '/all/!d' > estimate_contam/coverage_count && "
-#        "awk '{{print $3 $2}}' estimate_contam/coverage_count > tempa && "
-#        "awk '{{while ($1-- > 0) print $2}}' tempa | nl | sed 's/  *//g' > estimate_contam/temp1 && "
-#        "(echo \"cover\" && cat estimate_contam/temp1) > estimate_contam/temp2 && mv estimate_contam/temp2 estimate_contam/density_plot_values && "
-#        "rm estimate_contam/temp1 estimate_contam/temp2 && "
-#        "touch estimate_contam/done"
-
-rule detectm:
+rule detect_contam:
     input:
-        "coverm_filter/done"
+        'coverm_filter/done'
     output:
-        'detectm/done'
+        "detect_contam/done"
     conda:
-        '../envs/detectm.yaml'
+        "../envs/contam.yaml"
     threads:
         config["n_cores"]
     resources:
         mem_gb = config["max_memory"]
     params:
         bam = 'coverm_filter/combined_reference_filtered.bam',
-        gff = 'annotate/combined_reference.gff',
-        detectm = os.path.join(workflow.basedir, "bin/detectm/detectm")
+        gff = 'annotate/combined_reference.gff'
+    message:
+        "Detecting gDNA contamination..."
     shell:
-        "python {params.detectm} --bam {params.bam} --gff {params.gff} --output_directory detectm --force --cutoff 1 && "
-        "touch detectm/done"
+        #get genes on reverse strand - if no contam then no reads should be present on fwd strand
+        "gff2bed < {params.gff} > detect_contam/temp.bed && "
+        "awk '$8==\"CDS\"' detect_contam/temp.bed > detect_contam/temp.CDS.bed && "
+        "awk '$6 == \"-\"' detect_contam/temp.CDS.bed > detect_contam/CDS.rev.bed && "
+
+        #prepare file with overlapping ORFs. Avoid these regions when filtering contam.
+        "intersectBed -a detect_contam/temp.CDS.bed -b detect_contam/temp.CDS.bed -S > detect_contam/out && "
+        "cat detect_contam/out | awk '{{print $1 \"\\t\" $2 \"\t\" $3 \"\t\" $8}}' | sort -u > detect_contam/overlappedORFs.bed ; rm detect_contam/out && "
+
+        #split the reads mapping to forward strand
+        "samtools view -b -f 128 -F 16 {params.bam} > detect_contam/fwd1.bam && "
+        "samtools view -b -f 64 -F 32 {params.bam} > detect_contam/fwd2.bam && "
+        "samtools merge -f detect_contam/fwd.bam detect_contam/fwd1.bam detect_contam/fwd2.bam && "
+        "samtools index detect_contam/fwd.bam && "
+
+        #identify genomes with antisense reads. calculates median antisense coverage across all genes in a genome (fwd strand)...
+        #...then extracts all contigs per genome for use in strandCheckR
+        "bedtools coverage -hist -b detect_contam/fwd.bam -a detect_contam/CDS.rev.bed > detect_contam/temp1 && "
+        "sed -i '/^all/d' detect_contam/temp1 && "
+        "awk -F\"\t\" '{{print $1 \"\t\" $4 \"\t\" $11 * $12 / $13}}' detect_contam/temp1 > detect_contam/temp2 && "
+        "cat detect_contam/temp2 | datamash -s -g1,2 sum 3 > detect_contam/temp3 && " #sum the values from bedtools hist to get the total coverage
+        "cat detect_contam/temp3 | awk '{{print $1}}' | rev | cut -d '_' -f2- | rev > detect_contam/temp3_genomeID && " #get genome name, trims the last '_' separated field which represents contig number.
+        "paste detect_contam/temp3_genomeID detect_contam/temp3 > detect_contam/temp4 && "
+        "cat detect_contam/temp4 | datamash -s -g1 median 4 > detect_contam/temp5 && "
+        "awk -F\"\t\" '$2 > 0.4 {{print $1}}' detect_contam/temp5 > detect_contam/comtaminated_genome_list && "#0.5 median coverage on one strand equals 1x gDNA contam. Have this as a tunable parameter.
+        "join detect_contam/comtaminated_genome_list detect_contam/temp4 | awk '{{print $2}}' | sort -u > detect_contam/comtaminated_contigs_list && "
+        #"awk -F\"\t\" '$2 > 0.4 {{print $1 \"\t\" $2}}' detect_contam/temp4 > detect_contam/comtaminated_genome_list_coverage && "
+
+        #clean
+        #"rm detect_contam/temp*  detect_contam/fwd1* detect_contam/fwd2* && "
+        "touch detect_contam/done"
+
+rule filter_contam:
+    input:
+        "detect_contam/done"
+    output:
+        "filter_contam/done"
+    conda:
+        '../envs/filter_contam.yaml'
+    threads:
+        config["n_cores"]
+    resources:
+        mem_gb = config["max_memory"]
+    params:
+        in_bam = 'coverm_filter/combined_reference_filtered.bam',
+        out_bam = 'filter_contam/decontaminated.bam',
+        gff = 'annotate/combined_reference.gff',
+        contam_list = 'detect_contam/comtaminated_contigs_list',
+        overlap_list = 'detect_contam/overlappedORFs.bed'
+    message:
+        "Filtering gDNA contamination, if any, from BAM..."
+    script:
+        "../scripts/strandcheckr.R"
+
+rule feature_count:
+    input:
+        'detect_contam/done'
+    output:
+        "feature_count/done"
+    conda:
+        "../envs/feature_count.yaml"
+    threads:
+        config["n_cores"]
+    resources:
+        mem_gb = config["max_memory"]
+    params:
+        bam = 'filter_contam/decontaminated.bam',
+        gff = 'annotate/combined_reference.gff'
+    message:
+        "Counting reads..."
+    shell:
+        "featureCounts \
+            -a {params.gff} \
+            -o feature_count/feature_count_table \
+            -F GTF \
+            -T {threads} \
+            -p \
+            -M \
+            -s 2 \
+            --fraction \
+            -t 'CDS' \
+            --extraAttributes 'gene,product,db_xref,inference,UniProtKB' \
+            -g 'locus_tag' \
+            {params.bam} && "
+
+        "sed -i '1d' feature_count/feature_count_table && "
+
+        "printf 'Read count output available at: '$PWD'/feature_count/feature_count_table\n\n' && "
+        "ln -sf feature_count/feature_count_table feature_count_table  && "
+
+        "touch feature_count/done"

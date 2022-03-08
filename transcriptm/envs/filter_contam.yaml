@@ -3,7 +3,4 @@ channels:
   - conda-forge
   - biobakery
 dependencies:
-  - ruby
-  - samtools = 1.13
-  - bedtools = 2.30.0
-  - scipy
+  - bioconductor-strandcheckr = 1.12.0

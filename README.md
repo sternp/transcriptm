@@ -18,6 +18,10 @@ conda env config vars set CONDA_ENV_PATH=/lustre/work-lustre/microbiome/users/st
 Set your conda_prefix in transcriptm/template_config.yaml
 (Optional) set your other parameters in transcriptM/template_config.yaml
 
+
+
+
+
 ##read QC
 You may need to download database to filter contaminating reads from rRNA genes, the human genome...etc
 

@@ -1,3 +1,2 @@
 [console_scripts]
 transcriptm = transcriptm.transcriptm:main
-

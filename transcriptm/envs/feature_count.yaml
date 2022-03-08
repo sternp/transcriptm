@@ -1,0 +1,7 @@
+channels:
+  - bioconda
+  - conda-forge
+  - biobakery
+dependencies:
+  - gffread
+  - subread

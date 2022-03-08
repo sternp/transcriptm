@@ -2,7 +2,6 @@ Metadata-Version: 2.1
 Name: transcriptm
 Version: 0.0.1
 Summary: TranscriptM - metatranscriptome pipeline with metagenome contamination correction
-Home-page: UNKNOWN
 Author: Peter Sternes
 Author-email: peter.sternes@qut.edu.au
 License: GPL-3.0
@@ -30,6 +29,10 @@ conda env config vars set CONDA_ENV_PATH=/lustre/work-lustre/microbiome/users/st
 ##notes
 Set your conda_prefix in transcriptm/template_config.yaml
 (Optional) set your other parameters in transcriptM/template_config.yaml
+
+
+
+
 
 ##read QC
 You may need to download database to filter contaminating reads from rRNA genes, the human genome...etc
