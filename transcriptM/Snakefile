@@ -1,9 +1,0 @@
-from snakemake.utils import min_version
-min_version("6.5.3")
-
-
-module pipe:
-    snakefile: "pipe/Snakefile"
-    config: config
-
-use rule * from pipe as *

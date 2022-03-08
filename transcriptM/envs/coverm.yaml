@@ -1,9 +1,0 @@
-channels:
-  - bioconda
-  - conda-forge
-dependencies:
-  - coverm = 0.6
-  - parallel
-  - dashing
-  - fastani
-  - samtools = 1.13
