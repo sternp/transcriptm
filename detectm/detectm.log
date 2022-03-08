@@ -1,4 +1,0 @@
-[2021-09-20 11:11:10 AM] INFO: Running command: /lustre/work-lustre/microbiome/users/sternesp/transcriptM/transcriptM/bin/detectm/detectm --bam coverm/combined_reference.bam --gff annotate/combined_reference.gff --measure_type count --output_directory detectm
-[2021-09-20 11:11:10 AM] INFO: Running DirSeq component
-[2021-09-20 11:11:10 AM] INFO: Removing FASTA component from GFF file
-[2021-09-20 11:11:10 AM] INFO: Command: sed '/^##FASTA$/,$d' annotate/combined_reference.gff > /tmp/tmpm94l8oqw.gff
