@@ -7,11 +7,9 @@ git clone git@github.com:sternp/transcriptm.git
 
 cd transcriptm
 
-mamba env create -n transcriptm -f /home/sternesp/lustre-microbiome/users/sternesp/transcriptm/transcriptm.yaml
+mamba env create -n transcriptm -f transcriptm.yaml
 
 conda activate transcriptm
-
-cd /home/sternesp/lustre-microbiome/users/sternesp/transcriptm/
 
 pip install -e .
 ```
