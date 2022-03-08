@@ -11,9 +11,12 @@ other_db = snakemake.config["other_db"]
 trimmomatic = snakemake.config["trimmomatic"]
 sequencer_source = snakemake.config["sequencer_source"]
 skip_qc = snakemake.config["skip_qc"]
+trimmomatic_exec = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../bin/Trimmomatic-0.39/")
+
 
 print('R1 = ' + short_reads_1)
 print('R2 = ' + short_reads_2)
+print(trimmomatic_exec)
 
 if skip_qc == True:
     subprocess.Popen(
@@ -43,6 +46,7 @@ elif human_db != "none" and silva_db != "none" and other_db != "none" and skip_q
         -db %s \
         --trimmomatic-options %s \
         --sequencer-source %s \
+        --trimmomatic %s \
         --run-fastqc-end \
         --reorder \
         --remove-intermediate-output \
@@ -62,7 +66,7 @@ elif human_db != "none" and silva_db != "none" and other_db != "none" and skip_q
 
         touch qc/done
         """ %
-        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, human_db, silva_db, other_db, trimmomatic, sequencer_source), shell=True).wait()
+        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, human_db, silva_db, other_db, trimmomatic, sequencer_source, trimmomatic_exec), shell=True).wait()
 
 elif human_db != "none" and silva_db != "none" and other_db == "none" and skip_qc != True:
     subprocess.Popen(
@@ -78,6 +82,7 @@ elif human_db != "none" and silva_db != "none" and other_db == "none" and skip_q
         -db %s \
         --trimmomatic-options %s \
         --sequencer-source %s \
+        --trimmomatic %s \
         --run-fastqc-end \
         --reorder \
         --remove-intermediate-output \
@@ -97,7 +102,7 @@ elif human_db != "none" and silva_db != "none" and other_db == "none" and skip_q
 
         touch qc/done
         """ %
-        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, human_db, silva_db, trimmomatic, sequencer_source), shell=True).wait()
+        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, human_db, silva_db, trimmomatic, sequencer_source, trimmomatic_exec), shell=True).wait()
 
 elif human_db == "none" and silva_db != "none" and other_db != "none" and skip_qc != True:
     subprocess.Popen(
@@ -113,6 +118,7 @@ elif human_db == "none" and silva_db != "none" and other_db != "none" and skip_q
         -db %s \
         --trimmomatic-options %s \
         --sequencer-source %s \
+        --trimmomatic %s \
         --run-fastqc-end \
         --reorder \
         --remove-intermediate-output \
@@ -132,7 +138,7 @@ elif human_db == "none" and silva_db != "none" and other_db != "none" and skip_q
 
         touch qc/done
         """ %
-        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, silva_db, other_db, trimmomatic, sequencer_source), shell=True).wait()
+        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, silva_db, other_db, trimmomatic, sequencer_source, trimmomatic_exec), shell=True).wait()
 
 elif human_db != "none" and silva_db == "none" and other_db != "none" and skip_qc != True:
     subprocess.Popen(
@@ -148,6 +154,7 @@ elif human_db != "none" and silva_db == "none" and other_db != "none" and skip_q
         -db %s \
         --trimmomatic-options %s \
         --sequencer-source %s \
+        --trimmomatic %s \
         --run-fastqc-end \
         --reorder \
         --remove-intermediate-output \
@@ -167,7 +174,7 @@ elif human_db != "none" and silva_db == "none" and other_db != "none" and skip_q
 
         touch qc/done
         """ %
-        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, human_db, other_db, trimmomatic, sequencer_source), shell=True).wait()
+        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, human_db, other_db, trimmomatic, sequencer_source, trimmomatic_exec), shell=True).wait()
 
 
 elif human_db == "none" and silva_db != "none" and other_db == "none" and skip_qc != True:
@@ -183,6 +190,7 @@ elif human_db == "none" and silva_db != "none" and other_db == "none" and skip_q
         -db %s \
         --trimmomatic-options %s \
         --sequencer-source %s \
+        --trimmomatic %s \
         --run-fastqc-end \
         --reorder \
         --remove-intermediate-output \
@@ -201,7 +209,7 @@ elif human_db == "none" and silva_db != "none" and other_db == "none" and skip_q
 
         touch qc/done
         """ %
-        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, silva_db, trimmomatic, sequencer_source), shell=True).wait()
+        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, silva_db, trimmomatic, sequencer_source, trimmomatic_exec), shell=True).wait()
 
 
 elif human_db != "none" and silva_db == "none" and other_db == "none" and skip_qc != True:
@@ -217,6 +225,7 @@ elif human_db != "none" and silva_db == "none" and other_db == "none" and skip_q
         -db %s \
         --trimmomatic-options %s \
         --sequencer-source %s \
+        --trimmomatic %s \
         --run-fastqc-end \
         --reorder \
         --remove-intermediate-output \
@@ -235,7 +244,7 @@ elif human_db != "none" and silva_db == "none" and other_db == "none" and skip_q
 
         touch qc/done
         """ %
-        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, human_db, trimmomatic, sequencer_source), shell=True).wait()
+        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, human_db, trimmomatic, sequencer_source, trimmomatic_exec), shell=True).wait()
 
 
 elif human_db == "none" and silva_db == "none" and other_db != "none" and skip_qc != True:
@@ -251,6 +260,7 @@ elif human_db == "none" and silva_db == "none" and other_db != "none" and skip_q
         -db %s \
         --trimmomatic-options %s \
         --sequencer-source %s \
+        --trimmomatic %s \
         --run-fastqc-end \
         --reorder \
         --remove-intermediate-output \
@@ -269,7 +279,7 @@ elif human_db == "none" and silva_db == "none" and other_db != "none" and skip_q
 
         touch qc/done
         """ %
-        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, other_db, trimmomatic, sequencer_source), shell=True).wait()
+        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, other_db, trimmomatic, sequencer_source, trimmomatic_exec), shell=True).wait()
 
 
 elif human_db == "none" and silva_db == "none" and other_db == "none" and skip_qc != True:
@@ -284,10 +294,12 @@ elif human_db == "none" and silva_db == "none" and other_db == "none" and skip_q
         -t %s \
         --max-memory %s \
         --sequencer-source %s \
+        --trimmomatic %s \
         --run-fastqc-end \
         --reorder \
         --remove-intermediate-output \
         --run-trim-repetitive &&
+
 
         mkdir qc/filtered_reads &&
         mkdir qc/clean_reads &&
@@ -300,7 +312,7 @@ elif human_db == "none" and silva_db == "none" and other_db == "none" and skip_q
 
         mv qc/*.fastq qc/filtered_reads
         """ %
-        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, sequencer_source), shell=True).wait()
+        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, sequencer_source, trimmomatic_exec), shell=True).wait()
 
     subprocess.Popen(
         "echo 'Correcting read order...' && "
