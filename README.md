@@ -1,7 +1,10 @@
 # TranscriptM
-Under development
+Under development. A metatranscriptome pipeline with gDNA detection and removal.
 
-## installation
+## Installation
+git clone git@github.com:sternp/transcriptm.git
+
+cd transcriptm
 
 mamba env create -n transcriptm -f /home/sternesp/lustre-microbiome/users/sternesp/transcriptm/transcriptm.yaml
 
@@ -10,16 +13,6 @@ conda activate transcriptm
 cd /home/sternesp/lustre-microbiome/users/sternesp/transcriptm/
 
 pip install -e .
-
-optional, change the version of conda used:
-conda env config vars set CONDA_ENV_PATH=/lustre/work-lustre/microbiome/users/sternesp/conda/envs/
-
-##notes
-Set your conda_prefix in transcriptm/template_config.yaml
-(Optional) set your other parameters in transcriptM/template_config.yaml
-
-
-
 
 
 ##read QC
