@@ -167,7 +167,7 @@ rule detect_contam:
         "cat detect_contam/temp3 | awk '{{print $1}}' | rev | cut -d '_' -f2- | rev > detect_contam/temp3_genomeID && " #get genome name, trims the last '_' separated field which represents contig number.
         "paste detect_contam/temp3_genomeID detect_contam/temp3 > detect_contam/temp4 && "
         "cat detect_contam/temp4 | datamash -s -g1 median 4 > detect_contam/temp5 && "
-        "awk -F\"\t\" '$2 > 0.4 {{print $1}}' detect_contam/temp5 > detect_contam/comtaminated_genome_list && "#0.5 median coverage on one strand equals 1x gDNA contam. Have this as a tunable parameter.
+        "awk -F\"\t\" '$2 > 0.35 {{print $1}}' detect_contam/temp5 > detect_contam/comtaminated_genome_list && "#0.5 median coverage on one strand equals 1x gDNA contam. Have this as a tunable parameter.
         "join detect_contam/comtaminated_genome_list detect_contam/temp4 | awk '{{print $2}}' | sort -u > detect_contam/comtaminated_contigs_list && "
         #"awk -F\"\t\" '$2 > 0.4 {{print $1 \"\t\" $2}}' detect_contam/temp4 > detect_contam/comtaminated_genome_list_coverage && "
 
