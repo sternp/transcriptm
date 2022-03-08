@@ -15,6 +15,7 @@ cd /home/sternesp/lustre-microbiome/users/sternesp/transcriptm/
 pip install -e .
 
 
+## Notes
 ##read QC
 You may need to download database to filter contaminating reads from rRNA genes, the human genome...etc
 
