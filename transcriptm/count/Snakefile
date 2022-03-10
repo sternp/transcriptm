@@ -118,8 +118,8 @@ rule coverm_filter:
         --bam-files {params.bam} \
         --output-bam-files coverm_filter/combined_reference_filtered.bam \
         --threads {threads} \
-        --min-read-aligned-percent 0.95 \
-        --min-read-percent-identity 0.90 \
+        --min-read-aligned-percent 0.90 \
+        --min-read-percent-identity 0.95 \
         --proper-pairs-only \
         --exclude-supplementary && "
 
@@ -225,7 +225,7 @@ rule feature_count:
             --fraction \
             -t 'CDS' \
             --extraAttributes 'gene,product,db_xref,inference,UniProtKB' \
-            -g 'locus_tag' \
+            -g 'ID' \
             {params.bam} && "
 
         "sed -i '1d' feature_count/feature_count_table && "
