@@ -33,7 +33,6 @@ import sys
 import argparse
 import logging
 import os
-import shutil
 from datetime import datetime
 import subprocess
 
@@ -76,7 +75,7 @@ def phelp():
 
         A  metatranscriptome bioinformatics pipeline including metagenome contamination correction
                  
-        count - full pipeline. Raw reads -> counts per gene.
+        count - full pipeline. Raw reads -> counts per gene. Can skip the QC and/or fasta annotation steps.
         assemble - performs read QC and assembly using Trinity.
         
         Type 'transcriptm {count,assemble} --help' for specific information
@@ -151,7 +150,7 @@ def main():
         '-m', '--max-memory',
         help='Maximum memory for available usage in gigabytes, GB',
         dest='max_memory',
-        default=32,
+        default=64,
         metavar='<num>'
     )
     
@@ -297,7 +296,31 @@ def main():
         metavar='<type>'
     )    
 
-    
+    parser_count.add_argument(
+        '--min-read-aligned-percent',
+        help='Minimum read alignment percent for CoverM filtering (scale from 0-1)',
+        dest='min_read_aligned_percent',
+        default=0.9,
+        metavar='<num>'
+    )
+
+    parser_count.add_argument(
+        '--min-read-percent-identity',
+        help='Minimum read percent identity for CoverM filtering (scale from 0-1)',
+        dest='min_read_percent_identity',
+        default=0.95,
+        metavar='<num>'
+    )
+
+    parser_count.add_argument(
+        '--gDNA',
+        help='Median x-fold gDNA coverage to enable gDNA contamination correction',
+        dest='gDNA',
+        default=1,
+        metavar='<num>'
+    )
+
+   
     ##########################  sub-parser  ###########################
     parser_assemble = subparsers.add_parser('assemble',
                                         parents=[main_parser],
@@ -349,7 +372,7 @@ def main():
         #fill-in Namespace for attributes which only appear in specific subparsers
         params=['pe1', 'pe2', 'n_cores', 'max_memory', 'genome_dir', 'ref', 'gff', 'fasta_extension', 
                 'output', 'conda_prefix', 'human_db', 'silva_db', 'trimmomatic', 'sequencer_source', 
-                'kingdom', 'workflow', 'other_db', 'skip_qc']
+                'kingdom', 'workflow', 'other_db' ,'gDNA','skip_qc', 'min_read_aligned_percent', 'min_read_percent_identity']
         for i in params:
             try:
                 getattr(args, i)
@@ -377,6 +400,9 @@ def main():
                                 args.workflow,
                                 args.other_db,
                                 args.skip_qc,
+                                args.min_read_aligned_percent,
+                                args.min_read_percent_identity,
+                                args.gDNA,
                                 args)
 
         processor.make_config()
@@ -465,6 +491,10 @@ class transcriptm:
                  workflow="none",
                  other_db="none",
                  skip_qc=False,
+                 min_read_aligned_percent=0.90,
+                 min_read_percent_identity=0.95,
+                 gDNA=1,
+
                  args=None
                  ):
         self.pe1 = pe1
@@ -485,6 +515,9 @@ class transcriptm:
         self.workflow = workflow
         self.other_db = other_db
         self.skip_qc = skip_qc
+        self.min_read_aligned_percent = min_read_aligned_percent,
+        self.min_read_percent_identity = min_read_percent_identity,
+        self.gDNA = gDNA
 
     def make_config(self):
         """
@@ -536,7 +569,12 @@ class transcriptm:
             self.other_db = self.other_db
         if self.skip_qc != False:
             self.skip_qc = self.skip_qc  
-            
+ #       if self.min_read_aligned_percent != 0.90:
+ #           self.min_read_aligned_percent = self.min_read_aligned_percent
+ #       if self.min_read_percent_identity != 0.95:
+ #           self.min_read_percent_identity = self.min_read_percent_identity                     
+ #       if self.gDNA != 1:
+ #           self.gDNA = self.gDNA            
             
         conf["short_reads_1"] = self.pe1
         conf["short_reads_2"] = self.pe2
@@ -555,13 +593,14 @@ class transcriptm:
         conf["workflow"] = self.workflow
         conf["other_db"] = self.other_db
         conf["skip_qc"] = self.skip_qc
+        conf["other_db"] = self.other_db
+        conf["min_read_aligned_percent"] = self.min_read_aligned_percent
+        conf["min_read_percent_identity"] = self.min_read_percent_identity
+        conf["gDNA"] = self.gDNA
 
         with open(self.config, "w") as f:
             yaml.dump(conf, f)
-        logging.info(
-            "Configuration file written to %s\n"
-            "You may want to edit it using any text editor." % self.config
-        )
+        logging.info("Configuration file written to %s\n" % self.config)
 
     def validate_config(self):
         load_configfile(self.config)

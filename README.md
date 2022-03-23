@@ -16,8 +16,8 @@ pip install -e .
 
 ## Notes
 #read QC
-You may need to download database to filter contaminating reads from rRNA genes, the human genome...etc
-
+You may need to download database to filter contaminating reads from rRNA genes, the human genome...etc.
+Requires kneaddata to run. Otherwise you can make your own bowtie2-formatted databases.
 ```
 kneaddata_database --download human_genome bowtie2 /lustre/work-lustre/microbiome/db/human_grch37_bowtie2
 kneaddata_database --download ribosomal_RNA bowtie2 /lustre/work-lustre/microbiome/db/silva_rRNA_bowtie2

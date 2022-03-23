@@ -5,7 +5,7 @@ short_reads_2:
 n_cores:
     8
 max_memory:
-    32
+    64
 genome_dir:
     none
 ref:
@@ -32,3 +32,10 @@ other_db:
     none
 skip_qc:
     false
+min_read_aligned_percent:
+    0.90
+min_read_percent_identity:
+    0.95
+gDNA:
+    1
+

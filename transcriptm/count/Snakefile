@@ -27,6 +27,9 @@ onstart:
     sequencer_source = config["sequencer_source"]
     kingdom = config["kingdom"]
     skip_qc = config["skip_qc"]
+    min_read_aligned_percent = config["min_read_aligned_percent"]
+    min_read_percent_identity = config["min_read_percent_identity"]
+    gDNA = config["gDNA"]
 
 rule all:
     input:
@@ -110,7 +113,9 @@ rule coverm_filter:
     resources:
         mem_gb = config["max_memory"]
     params:
-        bam = 'coverm/combined_reference.bam'
+        bam = 'coverm/combined_reference.bam',
+        min_read_aligned_percent = config["min_read_aligned_percent"],
+        min_read_percent_identity = config["min_read_percent_identity"]
     message:
         "Filtering read alignments..."
     shell:
@@ -118,8 +123,8 @@ rule coverm_filter:
         --bam-files {params.bam} \
         --output-bam-files coverm_filter/combined_reference_filtered.bam \
         --threads {threads} \
-        --min-read-aligned-percent 0.90 \
-        --min-read-percent-identity 0.95 \
+        --min-read-aligned-percent {params.min_read_aligned_percent} \
+        --min-read-percent-identity {params.min_read_percent_identity} \
         --proper-pairs-only \
         --exclude-supplementary && "
 
@@ -139,9 +144,11 @@ rule detect_contam:
         mem_gb = config["max_memory"]
     params:
         bam = 'coverm_filter/combined_reference_filtered.bam',
-        gff = 'annotate/combined_reference.gff'
+        gff = 'annotate/combined_reference.gff',
+        gDNA = int(config["gDNA"]),
+        gDNA_single_strand = int(config["gDNA"])/2
     message:
-        "Detecting gDNA contamination..."
+        "Threshold for gDNA contamination set at {params.gDNA}x median gDNA read coverage per genome\nDetecting gDNA contamination..."
     shell:
         #get genes on reverse strand - if no contam then no reads should be present on fwd strand
         "gff2bed < {params.gff} > detect_contam/temp.bed && "
@@ -168,7 +175,7 @@ rule detect_contam:
         "paste detect_contam/temp3_genomeID detect_contam/temp3 > detect_contam/temp4 && "
         "sort -k1,1 detect_contam/temp4 > detect_contam/temp4_sort && "
         "cat detect_contam/temp4 | datamash -s -g1 median 4 > detect_contam/temp5 && "
-        "awk -F\"\t\" '$2 > 0.35 {{print $1}}' detect_contam/temp5 > detect_contam/contaminated_genome_list && "#0.5 median coverage on one strand equals 1x gDNA contam. Have this as a tunable parameter.
+        "awk -F\"\t\" '$2 > {params.gDNA_single_strand} {{print $1}}' detect_contam/temp5 > detect_contam/contaminated_genome_list && "#0.5 median coverage on one strand equals 1x gDNA contam. Have this as a tunable parameter.
         "sort -k1,1 detect_contam/contaminated_genome_list > detect_contam/contaminated_genome_list_sort && "
         "join  detect_contam/contaminated_genome_list_sort detect_contam/temp4_sort > detect_contam/temp6 && "
         "cat detect_contam/temp6 | awk '{{print $2}}' | sort -u > detect_contam/contaminated_contigs_list && "
