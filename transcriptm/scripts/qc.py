@@ -50,8 +50,6 @@ elif human_db != "none" and silva_db != "none" and other_db != "none" and skip_q
         --run-fastqc-end \
         --reorder \
         --remove-intermediate-output \
-        --run-trim-repetitive \
-        --serial \
         --decontaminate-pairs strict &&
 
         mkdir qc/filtered_reads &&
@@ -86,8 +84,6 @@ elif human_db != "none" and silva_db != "none" and other_db == "none" and skip_q
         --run-fastqc-end \
         --reorder \
         --remove-intermediate-output \
-        --run-trim-repetitive \
-        --serial \
         --decontaminate-pairs strict &&
 
         mkdir qc/filtered_reads &&
@@ -122,8 +118,6 @@ elif human_db == "none" and silva_db != "none" and other_db != "none" and skip_q
         --run-fastqc-end \
         --reorder \
         --remove-intermediate-output \
-        --run-trim-repetitive \
-        --serial \
         --decontaminate-pairs strict &&
 
         mkdir qc/filtered_reads &&
@@ -158,8 +152,6 @@ elif human_db != "none" and silva_db == "none" and other_db != "none" and skip_q
         --run-fastqc-end \
         --reorder \
         --remove-intermediate-output \
-        --run-trim-repetitive \
-        --serial \
         --decontaminate-pairs strict &&
 
         mkdir qc/filtered_reads &&
@@ -193,8 +185,6 @@ elif human_db == "none" and silva_db != "none" and other_db == "none" and skip_q
         --trimmomatic %s \
         --run-fastqc-end \
         --reorder \
-        --remove-intermediate-output \
-        --run-trim-repetitive \
         --decontaminate-pairs strict &&
 
         mkdir qc/filtered_reads &&
@@ -229,7 +219,6 @@ elif human_db != "none" and silva_db == "none" and other_db == "none" and skip_q
         --run-fastqc-end \
         --reorder \
         --remove-intermediate-output \
-        --run-trim-repetitive \
         --decontaminate-pairs strict &&
 
         mkdir qc/filtered_reads &&
@@ -264,7 +253,6 @@ elif human_db == "none" and silva_db == "none" and other_db != "none" and skip_q
         --run-fastqc-end \
         --reorder \
         --remove-intermediate-output \
-        --run-trim-repetitive \
         --decontaminate-pairs strict &&
 
         mkdir qc/filtered_reads &&
@@ -297,9 +285,7 @@ elif human_db == "none" and silva_db == "none" and other_db == "none" and skip_q
         --trimmomatic %s \
         --run-fastqc-end \
         --reorder \
-        --remove-intermediate-output \
-        --run-trim-repetitive &&
-
+        --remove-intermediate-output &&
 
         mkdir qc/filtered_reads &&
         mkdir qc/clean_reads &&
