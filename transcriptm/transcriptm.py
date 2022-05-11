@@ -300,7 +300,7 @@ def main():
         '--min-read-aligned-percent',
         help='Minimum read alignment percent for CoverM filtering (scale from 0-1)',
         dest='min_read_aligned_percent',
-        default=0.9,
+        default=0.75,
         metavar='<num>'
     )
 
