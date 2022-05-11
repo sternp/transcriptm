@@ -59,8 +59,8 @@ rule assemble:
     resources:
         mem_gb = config["max_memory"]
     params:
-        qc_reads_1 = 'qc/clean_reads/R1/*.fastq',
-        qc_reads_2 = 'qc/clean_reads/R2/*.fastq',
+        qc_reads_1 = 'qc/clean_reads/R1/*.fastq*',
+        qc_reads_2 = 'qc/clean_reads/R2/*.fastq*',
         n_cores = config["n_cores"],
         output = config["output"],
         max_memory = str(config["max_memory"])+'G'
