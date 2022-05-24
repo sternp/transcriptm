@@ -39,6 +39,7 @@ rule all:
         "coverm_filter/done",
         "detect_contam/done",
         "filter_contam/done",
+        "final_bam/done",
         "feature_count/done"
     threads:
         config["n_cores"]
@@ -181,6 +182,12 @@ rule detect_contam:
         "cat detect_contam/temp6 | awk '{{print $2}}' | sort -u > detect_contam/contaminated_contigs_list && "
         #"awk -F\"\t\" '$2 > 0.4 {{print $1 \"\t\" $2}}' detect_contam/temp4 > detect_contam/comtaminated_genome_list_coverage && "
 
+        #split the contaminated contigs into separate bam for strandCheckR
+        "samtools view {params.bam} | awk '{print $3 }' | sort -u > detect_contam/all_contigs && "
+        "comm -3 detect_contam/all_contigs detect_contam/contaminated_contigs_list > detect_contam/non-contaminated_contigs_list && "
+        "cat detect_contam/contaminated_contigs_list  | tr \"\n\" \" \" | xargs samtools view -bh {params.bam} > detect_contam/contam_contigs.bam && "
+        "cat detect_contam/non-contaminated_contigs_list  | tr \"\n\" \" \" | xargs samtools view -bh {params.bam} > detect_contam/non-contam_contigs.bam && "
+
         #clean
         #"rm detect_contam/temp*  detect_contam/fwd1* detect_contam/fwd2* && "
         "touch detect_contam/done"
@@ -197,19 +204,39 @@ rule filter_contam:
     resources:
         mem_gb = config["max_memory"]
     params:
-        in_bam = 'coverm_filter/combined_reference_filtered.bam',
-        out_bam = 'filter_contam/decontaminated.bam',
+        in_bam = 'detect_contam/contam_contigs.bam',
+        out_bam = 'filter_contam/decontam_contigs.bam',
         gff = 'annotate/combined_reference.gff',
-        contam_list = 'detect_contam/contaminated_contigs_list',
         overlap_list = 'detect_contam/overlappedORFs.bed'
     message:
         "Filtering gDNA contamination, if any, from BAM..."
     script:
         "../scripts/strandcheckr.R"
 
+
+rule finalise_bam:
+    input:
+        "filter_contam/done"
+    output:
+        "final_bam/done"
+    conda:
+        '../envs/filter_contam.yaml'
+    threads:
+        config["n_cores"]
+    resources:
+        mem_gb = config["max_memory"]
+    params:
+        contam_bam = 'coverm_filter/combined_reference_filtered.bam',
+        non-contam_bam = 'filter_contam/decontaminated.bam',
+    message:
+        "Merging decontaminated contigs with other contigs..."
+    shell:
+        "if [ -s detect_contam/contaminated_contigs_list ]; then samtools merge detect_contam/non-contam_contigs.bam filter_contam/decontam_contigs.bam -o final_bam/final.bam ; fi && "
+        "touch final_bam/done"
+
 rule feature_count:
     input:
-        'detect_contam/done'
+        "touch final_bam/done"
     output:
         "feature_count/done"
     conda:
@@ -219,7 +246,7 @@ rule feature_count:
     resources:
         mem_gb = config["max_memory"]
     params:
-        bam = 'filter_contam/decontaminated.bam',
+        bam = 'final_bam/final.bam',
         gff = 'annotate/combined_reference.gff'
     message:
         "Counting reads..."

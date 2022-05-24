@@ -25,12 +25,14 @@ table=filterDNA(file = snakemake@params[[1]],
   winWidth = 200,
   winStep = 50,
   getWin = TRUE,
-  mustKeepRanges = overlap_list,
-  sequences = contam_list)
+  mustKeepRanges = overlap_list)
 } else {
   system('echo "No gDNA detected, skipping filtering step..."')
-  system('ln -s $(pwd)/coverm_filter/combined_reference_filtered.bam $(pwd)/filter_contam/decontaminated.bam')
+  system('ln -s $(pwd)/coverm_filter/combined_reference_filtered.bam $(pwd)/final_bam/final.bam')
 }
 
 #finish
 system("touch filter_contam/done")
+if (length(contam_list) > 0){
+system("mv $(pwd)/out.stat $(pwd)/decontamination_stats.txt")
+}
