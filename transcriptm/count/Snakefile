@@ -40,7 +40,8 @@ rule all:
         "detect_contam/done",
         "filter_contam/done",
         "final_bam/done",
-        "feature_count/done"
+        "feature_count/done",
+        "final_table/done"
     threads:
         config["n_cores"]
     resources:
@@ -272,6 +273,26 @@ rule feature_count:
         "sed -i '1d' feature_count/feature_count_table && "
 
         "printf 'Read count output available at: '$PWD'/feature_count/feature_count_table\n\n' && "
-        "ln -sf feature_count/feature_count_table feature_count_table  && "
+        #"ln -sf feature_count/feature_count_table feature_count_table  && "
 
         "touch feature_count/done"
+
+rule final_output:
+    input:
+        "feature_count/done"
+    output:
+        "final_table/done"
+#    conda:
+#        "../envs/qc.yaml"
+    params:
+        in_table = 'feature_count/feature_count_table',
+        out_table = 'final_table/rawcount_tpm_table.txt',
+        out_touch = 'final_table/done'
+    threads:
+        config["n_cores"]
+    resources:
+        mem_gb = config["max_memory"]
+    message:
+        "Calculating TPM from raw counts and formatting final table..."
+    script:
+        "../scripts/calculate_tpm.py"
