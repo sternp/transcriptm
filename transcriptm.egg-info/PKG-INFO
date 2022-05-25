@@ -1,0 +1,43 @@
+Metadata-Version: 2.1
+Name: transcriptm
+Version: 0.0.5
+Summary: TranscriptM - metatranscriptome pipeline with metagenome contamination correction
+Author: Peter Sternes
+Author-email: peter.sternes@qut.edu.au
+License: GPL-3.0
+Classifier: Topic :: Scientific/Engineering :: Bio-Informatics
+Description-Content-Type: text/markdown
+License-File: LICENSE.md
+
+# TranscriptM
+Under development. A metatranscriptome pipeline with gDNA detection and removal.
+
+## Installation
+```
+git clone git@github.com:sternp/transcriptm.git
+
+cd transcriptm
+
+mamba env create -n transcriptm -f transcriptm.yaml
+
+conda activate transcriptm
+
+pip install -e .
+```
+
+## Notes
+#read QC
+You may need to download database to filter contaminating reads from rRNA genes, the human genome...etc.
+Requires kneaddata to run. Otherwise you can make your own bowtie2-formatted databases.
+```
+kneaddata_database --download human_genome bowtie2 /lustre/work-lustre/microbiome/db/human_grch37_bowtie2
+kneaddata_database --download ribosomal_RNA bowtie2 /lustre/work-lustre/microbiome/db/silva_rRNA_bowtie2
+kneaddata_database --download human_transcriptome bowtie2 /lustre/work-lustre/microbiome/db/human_transcriptome_bowtie2
+```
+
+These are already downloaded on the CMR server. If you wish to filter against these databases then they need to be specified by TranscriptM as below. You can specify as many of DBs as you want:
+
+```
+transcriptm \
+-db /lustre/work-lustre/microbiome/db/human_grch37_bowtie2 -db /lustre/work-lustre/microbiome/db/silva_rRNA_bowtie2 \
+```

@@ -12,10 +12,10 @@ suppressMessages(library(regioneR))
 ##############################################################################
 
 #read overlapping ORF regions
-overlap_list <- toGRanges(snakemake@params[[5]])
+overlap_list <- toGRanges(snakemake@params[[4]])
 
 #read list of genomes with contamination
-contam_list = scan(snakemake@params[[4]],what="", sep="\n")
+contam_list = scan(snakemake@params[[5]],what="", sep="\n")
 
 #filter, if contam exists.
 if (length(contam_list) > 0){
@@ -33,6 +33,4 @@ table=filterDNA(file = snakemake@params[[1]],
 
 #finish
 system("touch filter_contam/done")
-if (length(contam_list) > 0){
-system("mv $(pwd)/out.stat $(pwd)/decontamination_stats.txt")
-}
+if (length(contam_list) > 0){system("mv $(pwd)/out.stat $(pwd)/decontamination_stats.txt")}
