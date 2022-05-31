@@ -308,8 +308,8 @@ elif human_db == "none" and silva_db == "none" and other_db == "none" and skip_q
         mkdir qc/clean_reads/R1/ &&
         mkdir qc/clean_reads/R2/ &&
 
-        mv qc/*repeats.removed.1.fastq qc/clean_reads/R1 &&
-        mv qc/*repeats.removed.2.fastq qc/clean_reads/R2 &&
+        mv qc/*trimmed.1.fastq qc/clean_reads/R1 &&
+        mv qc/*trimmed.2.fastq qc/clean_reads/R2 &&
 
 
         mv qc/*.fastq qc/filtered_reads
