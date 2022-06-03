@@ -65,26 +65,26 @@ def centerify(text, width=-1):
 def phelp():
     print(
 """
-                                 
-         _____                              _       _   __  __ 
+
+         _____                              _       _   __  __
         |_   _| __ __ _ _ __  ___  ___ _ __(_)_ __ | |_|  \/  |
           | || '__/ _` | '_ \/ __|/ __| '__| | '_ \| __| |\/| |
           | || | | (_| | | | \__ \ (__| |  | | |_) | |_| |  | |
           |_||_|  \__,_|_| |_|___/\___|_|  |_| .__/ \__|_|  |_|
-                                             |_|               
+                                             |_|
 
         A  metatranscriptome bioinformatics pipeline including metagenome contamination correction
-                 
+
         count - full pipeline. Raw reads -> counts per gene. Can skip the QC and/or fasta annotation steps.
-        assemble - performs read QC and assembly using Trinity.
-        
+        assemble - performs read QC and assembly using Trinity. [UNDER DEVELOPMENT]
+
         Type 'transcriptm {count,assemble} --help' for specific information
-        
+
 
 """
 )
 
-        
+
 def main():
 
     ############################  Main Parser  ##############################
@@ -93,27 +93,27 @@ def main():
         prog='transcriptm',
         formatter_class=CustomHelpFormatter,
         add_help=False)
-    
+
     main_parser.add_argument(
         '--version',
         action='version',
         version=__version__,
         help='Show version information.'
         )
-    
+
     main_parser.add_argument(
         '--verbosity',
         help='1 = critical, 2 = error, 3 = warning, 4 = info, 5 = debug. Default = 4 (logging)',
         type=int,
         default=4
         )
-    
+
     main_parser.add_argument(
         '--log',
         help='Output logging information to file',
         default=False
-        )     
-    
+        )
+
     main_parser.add_argument(
         '-1',
         help='Forward FASTQ reads',
@@ -136,8 +136,8 @@ def main():
         dest='conda_prefix',
         default=Config.get_conda_path(),
         metavar='<path>'
-    )     
-    
+    )
+
     main_parser.add_argument(
         '-n', '--n-cores',
         help='Maximum number of cores available for use.',
@@ -145,7 +145,7 @@ def main():
         default=8,
         metavar='<num>'
     )
-    
+
     main_parser.add_argument(
         '-m', '--max-memory',
         help='Maximum memory for available usage in gigabytes, GB',
@@ -153,7 +153,7 @@ def main():
         default=64,
         metavar='<num>'
     )
-    
+
     main_parser.add_argument(
         '-o', '--output',
         help='Output directory',
@@ -161,7 +161,7 @@ def main():
         default='./',
         metavar='<dir>'
     )
-        
+
     main_parser.add_argument(
         '--dry-run',
         help='Perform snakemake dry run, tests workflow order and conda environments',
@@ -171,7 +171,7 @@ def main():
         dest='dryrun',
         default=False
     )
-    
+
     main_parser.add_argument(
         '--conda-frontend',
         help='Which conda frontend to use',
@@ -181,7 +181,7 @@ def main():
         choices=["conda", "mamba"],
         metavar='<type>'
     )
-    
+
     main_parser.add_argument(
         '--human-db',
         help='Location of a Bowtie2-formatted database of the human genome or transcriptome',
@@ -189,7 +189,7 @@ def main():
         default="none",
         metavar='<dir>'
     )
-    
+
     main_parser.add_argument(
         '--silva-db',
         help='Location of a Bowtie2-formatted database of the Silva rRNA db',
@@ -197,7 +197,7 @@ def main():
         default="none",
         metavar='<dir>'
     )
-    
+
     main_parser.add_argument(
         '--other-db',
         help='Location of a Bowtie2-formatted database of your choice',
@@ -232,29 +232,40 @@ def main():
 
 
     subparsers = main_parser.add_subparsers()
-    
-      
+
+
     ##########################  sub-parser  ###########################
     parser_count = subparsers.add_parser('count',
                                         parents=[main_parser],
                                         formatter_class=CustomHelpFormatter,
                                         add_help=True, description='''
-                                        
-                                ~ FULL PIPELINE - QC, mapping and read counting pipeline ~
+
+                                ~ FULL PIPELINE - QC, mapping, gDNA decontamination, and read counting pipeline ~
     How to use count:
-    
-    transcriptm count ADD INFO HERE
-    
-    Specifying -g will concatenate a directory of genomes into a single ref sequence and annotate with prokka (time intensive)
-    Alternatively, you can use pre-contructed files via --ref <single_ref_seq.fna> and --gff <annotated_ref_seq.gff3>''')      
-    
+
+    transcriptm count
+        -1 reads_R1.fastq \\
+        -2 reads_R2.fastq \\
+        -n 24 \\
+        --ref combined_reference.fna \\
+        --gff combined_reference.gff \\
+        -m 128 \\
+        -o output_directory
+
+    Specifying -g will concatenate a directory of .fna genomes into a single ref sequence and annotate with prokka (time intensive)
+    Alternatively, you can use pre-contructed files via --ref <combined_reference.fna> and --gff <combined_reference.gff>
+
+    Please note, currently the required format for the contig's FASTA headers are <genomeID>_<number>.
+    For example: >Ardenticatenaceae-ID1234_00001, >Ardenticatenaceae-ID1234_00002...etc
+    ''')
+
     parser_count.add_argument(
         '-w', '--workflow',
         help=argparse.SUPPRESS,
         dest='workflow',
         default='count'
-    )  
-    
+    )
+
     parser_count.add_argument(
         '-g','--genome-dir',
         help='Directory containing FASTA files of each genome',
@@ -262,7 +273,7 @@ def main():
         default='none',
         metavar='<dir>'
     )
-    
+
     parser_count.add_argument(
         '--ref',
         help='A single refernce .fna file of contigs/genomes',
@@ -270,7 +281,7 @@ def main():
         default='none',
         metavar='<file>'
     )
-    
+
     parser_count.add_argument(
         '--gff',
         help='GFF annotation of the reference sequence specified by --ref',
@@ -278,15 +289,15 @@ def main():
         default='none',
         metavar='<file>'
     )
-    
+
     parser_count.add_argument(
         '-x', '--genome-fasta-extension',
         help='File extension of genomes in the genome directory',
         dest='fasta_extension',
         default='fna',
         metavar='<extension>'
-    )    
-    
+    )
+
     parser_count.add_argument(
         '--kingdom',
         help='For use in Prokka when constructing & annotating a new reference from .fna files',
@@ -294,7 +305,7 @@ def main():
         default="Bacteria",
         choices=["Archaea", "Bacteria","Mitochondria","Viruses"],
         metavar='<type>'
-    )    
+    )
 
     parser_count.add_argument(
         '--min-read-aligned-percent',
@@ -314,35 +325,34 @@ def main():
 
     parser_count.add_argument(
         '--gDNA',
-        help='Median x-fold gDNA coverage to enable gDNA contamination correction',
+        help='Median x-fold gDNA coverage to enable gDNA contamination correction.',
         dest='gDNA',
         default=1,
         metavar='<num>'
     )
 
-   
+
     ##########################  sub-parser  ###########################
     parser_assemble = subparsers.add_parser('assemble',
                                         parents=[main_parser],
                                         formatter_class=CustomHelpFormatter,
                                         description='''
-                                          
+
                                 ~ DE NOVO ASSEMBLY - Read QC and de novo assembly pipeline ~
-    How to use assemble:
-    
-    transcriptm assemble ADD INFO HERE
-    
-    
-    ''')       
-    
+
+UNDER DEVELOPMENT.
+
+
+    ''')
+
     parser_assemble.add_argument(
         '-w', '--workflow',
         help=argparse.SUPPRESS,
         dest='workflow',
         default='assemble'
-    )      
+    )
 
-    
+
     ############################## Parsing input ##############################
     if (len(sys.argv) == 1 or len(sys.argv) == 2 or sys.argv[1] == '-h' or sys.argv[1] == '--help'):
         phelp()
@@ -368,10 +378,10 @@ def main():
         prefix = args.output
         if not os.path.exists(prefix):
             os.makedirs(prefix)
-        
+
         #fill-in Namespace for attributes which only appear in specific subparsers
-        params=['pe1', 'pe2', 'n_cores', 'max_memory', 'genome_dir', 'ref', 'gff', 'fasta_extension', 
-                'output', 'conda_prefix', 'human_db', 'silva_db', 'trimmomatic', 'sequencer_source', 
+        params=['pe1', 'pe2', 'n_cores', 'max_memory', 'genome_dir', 'ref', 'gff', 'fasta_extension',
+                'output', 'conda_prefix', 'human_db', 'silva_db', 'trimmomatic', 'sequencer_source',
                 'kingdom', 'workflow', 'other_db' ,'gDNA','skip_qc', 'min_read_aligned_percent', 'min_read_percent_identity']
         for i in params:
             try:
@@ -380,8 +390,8 @@ def main():
                 e = 'args.' + i + ' = \'none\''
                 exec(e)
             else:
-                pass   
-        
+                pass
+
         processor = transcriptm(args.pe1,
                                 args.pe2,
                                 int(args.n_cores),
@@ -552,7 +562,7 @@ class transcriptm:
         if self.output != "none":
             self.output = os.path.abspath(self.output)
         if self.fasta_extension != "none":
-            self.fasta_extension = str(self.fasta_extension)       
+            self.fasta_extension = str(self.fasta_extension)
         if self.human_db != "none":
             self.human_db = os.path.abspath(self.human_db)
         if self.silva_db != "none":
@@ -568,18 +578,18 @@ class transcriptm:
         if self.other_db != "none":
             self.other_db = self.other_db
         if self.skip_qc != False:
-            self.skip_qc = self.skip_qc  
+            self.skip_qc = self.skip_qc
  #       if self.min_read_aligned_percent != 0.90:
  #           self.min_read_aligned_percent = self.min_read_aligned_percent
  #       if self.min_read_percent_identity != 0.95:
- #           self.min_read_percent_identity = self.min_read_percent_identity                     
+ #           self.min_read_percent_identity = self.min_read_percent_identity
  #       if self.gDNA != 1:
- #           self.gDNA = self.gDNA            
-            
+ #           self.gDNA = self.gDNA
+
         conf["short_reads_1"] = self.pe1
         conf["short_reads_2"] = self.pe2
         conf["n_cores"] = self.threads
-        conf["max_memory"] = self.max_memory        
+        conf["max_memory"] = self.max_memory
         conf["genome_dir"] = self.genome_dir
         conf["ref"] = self.ref
         conf["gff"] = self.gff
@@ -650,5 +660,4 @@ class transcriptm:
 
 if __name__ == '__main__':
 
-    sys.exit(main())        
-        
+    sys.exit(main())

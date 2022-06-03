@@ -189,6 +189,7 @@ rule detect_contam:
         "sed -i \'s/^\t//\' detect_contam/non-contaminated_contigs_list && "
 
         #create beds for splitting
+        "samtools faidx annotate/combined_reference.fna && "
         "awk -v FS=\"\t\" -v OFS=\"\t\" '{{print $1 FS \"0\" FS ($2-1)}}' annotate/combined_reference.fna.fai > annotate/combined_reference.bed && "
         "fgrep -w -f detect_contam/contaminated_contigs_list annotate/combined_reference.bed > detect_contam/contaminated_contigs.bed && "
         "fgrep -w -f detect_contam/non-contaminated_contigs_list annotate/combined_reference.bed > detect_contam/non-contaminated_contigs.bed && "
@@ -245,6 +246,7 @@ rule finalise_bam:
         "if [ -s detect_contam/contaminated_contigs_list ];  then  samtools merge detect_contam/non-contam_contigs.bam filter_contam/decontam_contigs.bam -o final_bam/final.bam; else ln -s $PWD/coverm_filter/combined_reference_filtered.bam final_bam/final.bam; fi && "
         #"if [ -s detect_contam/contaminated_contigs_list ]; then samtools merge detect_contam/non-contam_contigs.bam filter_contam/decontam_contigs.bam -o final_bam/final.bam ; fi && "
         "samtools index final_bam/final.bam && "
+        "rm detect_contam/*.bam* && "
         "touch final_bam/done"
 
 rule feature_count:
