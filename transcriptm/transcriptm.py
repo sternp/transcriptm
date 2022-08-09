@@ -20,7 +20,7 @@
 from transcriptm.__init__ import __version__
 import transcriptm.config.config as Config
 __author__ = "Peter Sternes"
-__copyright__ = "Copyright 2021"
+__copyright__ = "Copyright 2022"
 __credits__ = ["Peter Sternes"]
 __license__ = "GPL3"
 __maintainer__ = "Peter Sternes"
@@ -75,11 +75,9 @@ def phelp():
 
         A  metatranscriptome bioinformatics pipeline including metagenome contamination correction
 
-        count - full pipeline. Raw reads -> counts per gene. Can skip the QC and/or fasta annotation steps.
-        assemble - performs read QC and assembly using Trinity. [UNDER DEVELOPMENT]
+        count - Full pipeline. Raw reads -> counts per gene. Can skip the QC and/or fasta annotation steps.
 
         Type 'transcriptm {count,assemble} --help' for specific information
-
 
 """
 )
@@ -329,27 +327,6 @@ def main():
         dest='gDNA',
         default=1,
         metavar='<num>'
-    )
-
-
-    ##########################  sub-parser  ###########################
-    parser_assemble = subparsers.add_parser('assemble',
-                                        parents=[main_parser],
-                                        formatter_class=CustomHelpFormatter,
-                                        description='''
-
-                                ~ DE NOVO ASSEMBLY - Read QC and de novo assembly pipeline ~
-
-UNDER DEVELOPMENT.
-
-
-    ''')
-
-    parser_assemble.add_argument(
-        '-w', '--workflow',
-        help=argparse.SUPPRESS,
-        dest='workflow',
-        default='assemble'
     )
 
 

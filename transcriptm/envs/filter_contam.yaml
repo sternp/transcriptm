@@ -1,6 +1,0 @@
-channels:
-  - bioconda
-  - conda-forge
-  - biobakery
-dependencies:
-  - bioconductor-strandcheckr = 1.12.0

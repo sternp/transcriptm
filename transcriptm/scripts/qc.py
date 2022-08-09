@@ -1,5 +1,6 @@
 import subprocess
 import os
+import shutil
 
 short_reads_1 = snakemake.config["short_reads_1"]
 short_reads_2 = snakemake.config["short_reads_2"]
@@ -17,6 +18,8 @@ trimmomatic_exec = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..
 print('R1 = ' + short_reads_1)
 print('R2 = ' + short_reads_2)
 print(trimmomatic_exec)
+shutil.rmtree("qc/")
+
 
 if skip_qc == True:
     subprocess.Popen(
@@ -54,15 +57,17 @@ elif human_db != "none" and silva_db != "none" and other_db != "none" and skip_q
 		--run-trim-repetitive \
         --decontaminate-pairs strict &&
 
-        mkdir qc/filtered_reads &&
         mkdir qc/clean_reads &&
         mkdir qc/clean_reads/R1/ &&
         mkdir qc/clean_reads/R2/ &&
 
         mv qc/*paired_1.fastq qc/clean_reads/R1 &&
         mv qc/*paired_2.fastq qc/clean_reads/R2 &&
-
-        mv qc/*.fastq qc/filtered_reads &&
+        
+        gzip qc/clean_reads/R1/* &&
+        gzip qc/clean_reads/R2/* &&
+        
+        rm qc/*.fastq &&
 
         touch qc/done
         """ %
@@ -90,15 +95,17 @@ elif human_db != "none" and silva_db != "none" and other_db == "none" and skip_q
 		--run-trim-repetitive \
         --decontaminate-pairs strict &&
 
-        mkdir qc/filtered_reads &&
         mkdir qc/clean_reads &&
         mkdir qc/clean_reads/R1/ &&
         mkdir qc/clean_reads/R2/ &&
 
         mv qc/*paired_1.fastq qc/clean_reads/R1 &&
         mv qc/*paired_2.fastq qc/clean_reads/R2 &&
-
-        mv qc/*.fastq qc/filtered_reads &&
+        
+        gzip qc/clean_reads/R1/* &&
+        gzip qc/clean_reads/R2/* &&
+        
+        rm qc/*.fastq &&
 
         touch qc/done
         """ %
@@ -126,15 +133,17 @@ elif human_db == "none" and silva_db != "none" and other_db != "none" and skip_q
 		--run-trim-repetitive \
         --decontaminate-pairs strict &&
 
-        mkdir qc/filtered_reads &&
         mkdir qc/clean_reads &&
         mkdir qc/clean_reads/R1/ &&
         mkdir qc/clean_reads/R2/ &&
 
         mv qc/*paired_1.fastq qc/clean_reads/R1 &&
         mv qc/*paired_2.fastq qc/clean_reads/R2 &&
-
-        mv qc/*.fastq qc/filtered_reads &&
+               
+        gzip qc/clean_reads/R1/* &&
+        gzip qc/clean_reads/R2/* &&
+        
+        rm qc/*.fastq &&
 
         touch qc/done
         """ %
@@ -162,15 +171,17 @@ elif human_db != "none" and silva_db == "none" and other_db != "none" and skip_q
 		--run-trim-repetitive \
         --decontaminate-pairs strict &&
 
-        mkdir qc/filtered_reads &&
         mkdir qc/clean_reads &&
         mkdir qc/clean_reads/R1/ &&
         mkdir qc/clean_reads/R2/ &&
 
         mv qc/*paired_1.fastq qc/clean_reads/R1 &&
         mv qc/*paired_2.fastq qc/clean_reads/R2 &&
-
-        mv qc/*.fastq qc/filtered_reads &&
+                
+        gzip qc/clean_reads/R1/* &&
+        gzip qc/clean_reads/R2/* &&
+        
+        rm qc/*.fastq &&
 
         touch qc/done
         """ %
@@ -197,15 +208,17 @@ elif human_db == "none" and silva_db != "none" and other_db == "none" and skip_q
 		--run-trim-repetitive \
         --decontaminate-pairs strict &&
 
-        mkdir qc/filtered_reads &&
         mkdir qc/clean_reads &&
         mkdir qc/clean_reads/R1/ &&
         mkdir qc/clean_reads/R2/ &&
 
         mv qc/*paired_1.fastq qc/clean_reads/R1 &&
         mv qc/*paired_2.fastq qc/clean_reads/R2 &&
-
-        mv qc/*.fastq qc/filtered_reads &&
+               
+        gzip qc/clean_reads/R1/* &&
+        gzip qc/clean_reads/R2/* &&
+        
+        rm qc/*.fastq &&
 
         touch qc/done
         """ %
@@ -233,15 +246,17 @@ elif human_db != "none" and silva_db == "none" and other_db == "none" and skip_q
 		--run-trim-repetitive \
         --decontaminate-pairs strict &&
 
-        mkdir qc/filtered_reads &&
         mkdir qc/clean_reads &&
         mkdir qc/clean_reads/R1/ &&
         mkdir qc/clean_reads/R2/ &&
 
         mv qc/*paired_1.fastq qc/clean_reads/R1 &&
         mv qc/*paired_2.fastq qc/clean_reads/R2 &&
-
-        mv qc/*.fastq qc/filtered_reads &&
+                
+        gzip qc/clean_reads/R1/* &&
+        gzip qc/clean_reads/R2/* &&
+        
+        rm qc/*.fastq &&
 
         touch qc/done
         """ %
@@ -269,15 +284,17 @@ elif human_db == "none" and silva_db == "none" and other_db != "none" and skip_q
 		--run-trim-repetitive \
         --decontaminate-pairs strict &&
 
-        mkdir qc/filtered_reads &&
         mkdir qc/clean_reads &&
         mkdir qc/clean_reads/R1/ &&
         mkdir qc/clean_reads/R2/ &&
 
         mv qc/*paired_1.fastq qc/clean_reads/R1 &&
         mv qc/*paired_2.fastq qc/clean_reads/R2 &&
-
-        mv qc/*.fastq qc/filtered_reads &&
+                
+        gzip qc/clean_reads/R1/* &&
+        gzip qc/clean_reads/R2/* &&
+        
+        rm qc/*.fastq &&
 
         touch qc/done
         """ %
@@ -285,7 +302,7 @@ elif human_db == "none" and silva_db == "none" and other_db != "none" and skip_q
 
 
 elif human_db == "none" and silva_db == "none" and other_db == "none" and skip_qc != True:
-    #kneaddata doesn't reorder if dont using bowtie2 decontamination
+    #kneaddata doesn't reorder if not using bowtie2 decontamination
     subprocess.Popen(
         """
         kneaddata \
@@ -303,7 +320,6 @@ elif human_db == "none" and silva_db == "none" and other_db == "none" and skip_q
 		--run-trim-repetitive \
         --remove-intermediate-output &&
 
-        mkdir qc/filtered_reads &&
         mkdir qc/clean_reads &&
         mkdir qc/clean_reads/R1/ &&
         mkdir qc/clean_reads/R2/ &&
@@ -311,8 +327,7 @@ elif human_db == "none" and silva_db == "none" and other_db == "none" and skip_q
         mv qc/*trimmed.1.fastq qc/clean_reads/R1 &&
         mv qc/*trimmed.2.fastq qc/clean_reads/R2 &&
 
-
-        mv qc/*.fastq qc/filtered_reads
+        rm qc/*.fastq
         """ %
         (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, sequencer_source, trimmomatic_exec), shell=True).wait()
 
@@ -323,6 +338,9 @@ elif human_db == "none" and silva_db == "none" and other_db == "none" and skip_q
         "mv qc/clean_reads/R2/*.fastq qc/clean_reads/R2/unordered.fastq && "
 
         "repair.sh in1=qc/clean_reads/R1/unordered.fastq in2=qc/clean_reads/R2/unordered.fastq out1=qc/clean_reads/R1/reordered_R1.fastq out2=qc/clean_reads/R2/reordered_R2.fastq && "
+        
+        "gzip qc/clean_reads/R1/reordered_R1.fastq && "
+        "gzip qc/clean_reads/R2/reordered_R2.fastq && "
 
         "rm qc/clean_reads/R1/unordered.fastq && "
         "rm qc/clean_reads/R2/unordered.fastq && "

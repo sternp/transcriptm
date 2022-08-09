@@ -51,8 +51,6 @@ rule qc:
     input:
     output:
         "qc/done"
-    conda:
-        "../envs/qc.yaml"
     threads:
         config["n_cores"]
     resources:
@@ -67,8 +65,6 @@ rule annotate:
         "qc/done"
     output:
         "annotate/done"
-    conda:
-        "../envs/annotate.yaml"
     threads:
         config["n_cores"]
     resources:
@@ -83,8 +79,6 @@ rule coverm:
         'annotate/done'
     output:
         "coverm/done",
-    conda:
-        "../envs/coverm.yaml"
     threads:
         config["n_cores"]
     resources:
@@ -108,8 +102,6 @@ rule coverm_filter:
         'coverm/done'
     output:
         "coverm_filter/done",
-    conda:
-        "../envs/coverm.yaml"
     threads:
         config["n_cores"]
     resources:
@@ -138,8 +130,6 @@ rule detect_contam:
         'coverm_filter/done'
     output:
         "detect_contam/done"
-    conda:
-        "../envs/contam.yaml"
     threads:
         config["n_cores"]
     resources:
@@ -160,8 +150,6 @@ rule filter_contam:
         "detect_contam/done"
     output:
         "filter_contam/done"
-    conda:
-        '../envs/filter_contam.yaml'
     threads:
         config["n_cores"]
     resources:
@@ -183,8 +171,6 @@ rule finalise_bam:
         "filter_contam/done"
     output:
         "final_bam/done"
-    conda:
-        '../envs/contam.yaml'
     threads:
         config["n_cores"]
     resources:
@@ -206,8 +192,6 @@ rule feature_count:
         "final_bam/done"
     output:
         "feature_count/done"
-    conda:
-        "../envs/feature_count.yaml"
     threads:
         config["n_cores"]
     resources:
@@ -244,8 +228,6 @@ rule final_output:
         "feature_count/done"
     output:
         "final_table/done"
-#    conda:
-#        "../envs/qc.yaml"
     params:
         in_table = 'feature_count/feature_count_table',
         out_table = 'final_table/rawcount_tpm_table.txt',

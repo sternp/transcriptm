@@ -1,9 +1,0 @@
-channels:
-  - bioconda
-  - conda-forge
-  - biobakery
-dependencies:
-  - samtools = 1.13
-  - bedtools
-  - datamash
-  - bedops
