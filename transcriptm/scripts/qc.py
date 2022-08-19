@@ -17,7 +17,6 @@ trimmomatic_exec = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..
 
 print('R1 = ' + short_reads_1)
 print('R2 = ' + short_reads_2)
-print(trimmomatic_exec)
 shutil.rmtree("qc/")
 
 
@@ -25,9 +24,10 @@ if skip_qc == True:
     subprocess.Popen(
         """
         echo '--skip-qc specified, skipping read QC steps...' &&
+        mkdir qc
         mkdir qc/clean_reads &&
-        mkdir qc/clean_reads/R1/ &&
-        mkdir qc/clean_reads/R2/ &&
+        mkdir qc/clean_reads/R1 &&
+        mkdir qc/clean_reads/R2 &&
         cp %s qc/clean_reads/R1 &&
         cp %s qc/clean_reads/R2 &&
         touch qc/done

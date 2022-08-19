@@ -1,15 +1,13 @@
 import subprocess
 import os
 
-gff = snakemake.config["gff"]
 gDNA_single_strand = int(snakemake.config["gDNA"])/2
-
 
 #get genes on reverse strand - if no contam then no reads should be present on fwd strand
 subprocess.Popen(
-	"gff2bed < %s > detect_contam/temp.bed && "
+	"gff2bed < annotate/combined_reference.gff > detect_contam/temp.bed && "
 	"awk '$8==\"CDS\"' detect_contam/temp.bed > detect_contam/temp.CDS.bed && "
-	"awk '$6 == \"-\"' detect_contam/temp.CDS.bed > detect_contam/CDS.rev.bed" % (gff), shell=True).wait()
+	"awk '$6 == \"-\"' detect_contam/temp.CDS.bed > detect_contam/CDS.rev.bed", shell=True).wait()
 
 
 #prepare file with overlapping ORFs. Avoid these regions when filtering contam.

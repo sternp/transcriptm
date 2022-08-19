@@ -135,10 +135,7 @@ rule detect_contam:
     resources:
         mem_gb = config["max_memory"]
     params:
-        bam = 'coverm_filter/combined_reference_filtered.bam',
-        gff = 'annotate/combined_reference.gff',
         gDNA = int(config["gDNA"]),
-        gDNA_single_strand = int(config["gDNA"])/2
     message:
         "Threshold for gDNA contamination set at {params.gDNA}x median gDNA read coverage per genome\nDetecting gDNA contamination..."
     script:
