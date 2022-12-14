@@ -181,27 +181,12 @@ def main():
     )
 
     main_parser.add_argument(
-        '--human-db',
-        help='Location of a Bowtie2-formatted database of the human genome or transcriptome',
-        dest='human_db',
-        default="none",
-        metavar='<dir>'
-    )
-
-    main_parser.add_argument(
-        '--silva-db',
-        help='Location of a Bowtie2-formatted database of the Silva rRNA db',
-        dest='silva_db',
-        default="none",
-        metavar='<dir>'
-    )
-
-    main_parser.add_argument(
-        '--other-db',
-        help='Location of a Bowtie2-formatted database of your choice',
+        '-db',
+        help='Location of one or more Bowtie2-formatted databases for contamination filtering during read QC (i.e. human, rRNA..etc)',
         dest='other_db',
         default="none",
-        metavar='<dir>'
+        metavar='<dir>',
+        nargs='+'
     )
 
     main_parser.add_argument(
@@ -248,6 +233,7 @@ def main():
         --ref combined_reference.fna \\
         --gff combined_reference.gff \\
         -m 128 \\
+        -db /dir/to/bowtie2_1 /dir/to/bowtie2_2 \\
         -o output_directory
 
     Specifying -g will concatenate a directory of .fna genomes into a single ref sequence and annotate with prokka (time intensive)
@@ -358,7 +344,7 @@ def main():
 
         #fill-in Namespace for attributes which only appear in specific subparsers
         params=['pe1', 'pe2', 'n_cores', 'max_memory', 'genome_dir', 'ref', 'gff', 'fasta_extension',
-                'output', 'conda_prefix', 'human_db', 'silva_db', 'trimmomatic', 'sequencer_source',
+                'output', 'conda_prefix', 'trimmomatic', 'sequencer_source',
                 'kingdom', 'workflow', 'other_db' ,'gDNA','skip_qc', 'min_read_aligned_percent', 'min_read_percent_identity']
         for i in params:
             try:
@@ -379,8 +365,6 @@ def main():
                                 args.fasta_extension,
                                 args.output,
                                 args.conda_prefix,
-                                args.human_db,
-                                args.silva_db,
                                 args.trimmomatic,
                                 args.sequencer_source,
                                 args.kingdom,
@@ -470,8 +454,6 @@ class transcriptm:
                  fasta_extension="none",
                  output=".",
                  conda_prefix=Config.get_conda_path(),
-                 human_db = "none",
-                 silva_db = "none",
                  trimmomatic = "SLIDINGWINDOW:4:20\ MINLEN:50",
                  sequencer_source = "TruSeq3",
                  kingdom="Bacteria",
@@ -481,7 +463,6 @@ class transcriptm:
                  min_read_aligned_percent=0.90,
                  min_read_percent_identity=0.95,
                  gDNA=1,
-
                  args=None
                  ):
         self.pe1 = pe1
@@ -494,8 +475,6 @@ class transcriptm:
         self.fasta_extension = fasta_extension
         self.output = output
         self.conda_prefix = conda_prefix
-        self.human_db = human_db
-        self.silva_db = silva_db
         self.trimmomatic = trimmomatic
         self.sequencer_source = sequencer_source
         self.kingdom = kingdom
@@ -540,10 +519,6 @@ class transcriptm:
             self.output = os.path.abspath(self.output)
         if self.fasta_extension != "none":
             self.fasta_extension = str(self.fasta_extension)
-        if self.human_db != "none":
-            self.human_db = os.path.abspath(self.human_db)
-        if self.silva_db != "none":
-            self.silva_db = os.path.abspath(self.silva_db)
         if self.trimmomatic != "SLIDINGWINDOW:4:20\ MINLEN:50":
             self.trimmomatic = self.trimmomatic
         if self.sequencer_source != "TruSeq3":
@@ -572,15 +547,12 @@ class transcriptm:
         conf["gff"] = self.gff
         conf["fasta_extension"] = self.fasta_extension
         conf["output"] = self.output
-        conf["human_db"] = self.human_db
-        conf["silva_db"] = self.silva_db
         conf["trimmomatic"] = self.trimmomatic
         conf["sequencer_source"] = self.sequencer_source
         conf["kingdom"] = self.kingdom
         conf["workflow"] = self.workflow
         conf["other_db"] = self.other_db
         conf["skip_qc"] = self.skip_qc
-        conf["other_db"] = self.other_db
         conf["min_read_aligned_percent"] = self.min_read_aligned_percent
         conf["min_read_percent_identity"] = self.min_read_percent_identity
         conf["gDNA"] = self.gDNA
