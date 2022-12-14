@@ -38,7 +38,8 @@ For example: >Ardenticatenaceae-ID1234_00001, >Ardenticatenaceae-ID1234_00002...
 ```
 
 ## Notes
-You may need to download database to filter contaminating reads from rRNA genes, the human genome...etc. Otherwise you can make your own Bowtie2-formatted database. You can specify multiple Bowtie2 databases in the transcriptm command, i.e. ```-db /dir/to/db1 /dir/to/db2```
+You may need to download databases to filter contaminating reads from rRNA genes, the human genome...etc. Otherwise you can make your own Bowtie2-formatted database. You can specify multiple Bowtie2 databases in the transcriptm command, i.e. ```-db /dir/to/db1 /dir/to/db2```
+
 Pre-made databases can be downloaded like so:
 ```
 conda activate transcriptm
