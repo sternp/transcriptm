@@ -1,6 +1,6 @@
 # TranscriptM
 
-A  metatranscriptome bioinformatics pipeline including metagenome contamination correction
+A  metatranscriptome bioinformatics pipeline including metagenome contamination correction.
 
 
 
@@ -35,6 +35,48 @@ Alternatively, you can use pre-contructed files via --ref <combined_reference.fn
 
 Please note, currently the required format for the contig's FASTA headers are <genomeID>_<number>.
 For example: >Ardenticatenaceae-ID1234_00001, >Ardenticatenaceae-ID1234_00002...etc
+
+positional arguments:
+  {count}
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --version             Show version information.
+  --verbosity VERBOSITY
+                        1 = critical, 2 = error, 3 = warning, 4 = info, 5 = debug. Default = 4 (logging) (default: 4)
+  --log LOG             Output logging information to file
+  -1 <file1>            Forward FASTQ reads (default: none)
+  -2 <file2>            Reverse FASTQ reads (default: none)
+  --conda-prefix <path>
+                        Path to the location of installed conda environments, or where to install new environments (default: /work/microbiome/users/sternesp/conda/envs/transcriptm-dev/envs/)
+  -n <num>, --n-cores <num>
+                        Maximum number of cores available for use. (default: 8)
+  -m <num>, --max-memory <num>
+                        Maximum memory for available usage in gigabytes, GB (default: 64)
+  -o <dir>, --output <dir>
+                        Output directory (default: ./)
+  --dry-run [DRYRUN]    Perform snakemake dry run, tests workflow order and conda environments
+  --conda-frontend <type>
+                        Which conda frontend to use (default: mamba)
+  -db <dir> [<dir> ...]
+                        Location of one or more Bowtie2-formatted databases for contamination filtering during read QC (i.e. human, rRNA..etc) (default: none)
+  --trimmomatic <options>
+                        Apply custom trimmomatic values (default: SLIDINGWINDOW:4:20\ MINLEN:50)
+  --sequencer-source <type>
+                        NexteraPE, TruSeq2, TruSeq3, none (default: TruSeq3)
+  --skip-qc             Skip the read QC step
+  -g <dir>, --genome-dir <dir>
+                        Directory containing FASTA files of each genome (default: none)
+  --ref <file>          A single refernce .fna file of contigs/genomes (default: none)
+  --gff <file>          GFF annotation of the reference sequence specified by --ref (default: none)
+  -x <extension>, --genome-fasta-extension <extension>
+                        File extension of genomes in the genome directory (default: fna)
+  --kingdom <type>      For use in Prokka when constructing & annotating a new reference from .fna files (default: Bacteria)
+  --min-read-aligned-percent <num>
+                        Minimum read alignment percent for CoverM filtering (scale from 0-1) (default: 0.75)
+  --min-read-percent-identity <num>
+                        Minimum read percent identity for CoverM filtering (scale from 0-1) (default: 0.95)
+  --gDNA <num>          Median x-fold gDNA coverage to enable gDNA contamination correction. (default: 1)
 ```
 
 ## Notes
