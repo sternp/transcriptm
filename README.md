@@ -26,7 +26,7 @@ transcriptm count
     -n 24 \
     --ref combined_reference.fna \
     --gff combined_reference.gff \
-     -m 128 \
+    -m 128 \
     -db /dir/to/bowtie2_1 /dir/to/bowtie2_2 \
     -o output_directory
 
