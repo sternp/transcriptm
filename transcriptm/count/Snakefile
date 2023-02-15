@@ -207,7 +207,7 @@ rule feature_count:
             -s 2 \
             --fraction \
             -t 'CDS' \
-            --extraAttributes 'gene,product,db_xref,inference,UniProtKB' \
+            --extraAttributes 'gene,product,db_xref,Dbxref,inference,UniProtKB' \
             -g 'ID' \
             {params.bam} && "
 
