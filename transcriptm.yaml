@@ -11,8 +11,8 @@ dependencies:
   - pandas
   - biopython
   - mamba>=0.8.2
-  - pigz = 2.4
-  - agat=0.8.0
+  - pigz
+  - agat
   - bbmap=38.93
   - bedops
   - bedtools
