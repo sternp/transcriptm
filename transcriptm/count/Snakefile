@@ -21,7 +21,6 @@ onstart:
     ref = config["ref"]
     gff = config["gff"]
     max_memory = config["max_memory"]
-    trimmomatic = config["trimmomatic"]
     sequencer_source = config["sequencer_source"]
     kingdom = config["kingdom"]
     skip_qc = config["skip_qc"]
