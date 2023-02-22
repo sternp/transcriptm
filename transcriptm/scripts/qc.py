@@ -6,7 +6,6 @@ short_reads_1 = snakemake.config["short_reads_1"]
 short_reads_2 = snakemake.config["short_reads_2"]
 output_dir_path = os.path.join(snakemake.config["output"], "qc")
 max_memory = str(snakemake.config["max_memory"]) + 'g' # kneaddata takes bytes as input. change to GBs
-trimmomatic = snakemake.config["trimmomatic"]
 sequencer_source = snakemake.config["sequencer_source"]
 skip_qc = snakemake.config["skip_qc"]
 trimmomatic_exec = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../bin/Trimmomatic-0.39/")
@@ -45,7 +44,6 @@ elif other_db != "none" and skip_qc != True:
         -p %s \
         --max-memory %s \
         %s \
-        --trimmomatic-options %s \
         --sequencer-source %s \
         --trimmomatic %s \
         --run-fastqc-end \
@@ -69,7 +67,7 @@ elif other_db != "none" and skip_qc != True:
 
         touch qc/done
         """ %
-        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, db, trimmomatic, sequencer_source, trimmomatic_exec), shell=True).wait()
+        (short_reads_1, short_reads_2, output_dir_path, snakemake.threads, snakemake.threads, max_memory, db, sequencer_source, trimmomatic_exec), shell=True).wait()
 
 
 elif other_db == "none" and skip_qc != True:
