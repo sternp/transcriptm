@@ -190,14 +190,6 @@ def main():
     )
 
     main_parser.add_argument(
-        '--trimmomatic',
-        help='Apply custom trimmomatic values',
-        dest='trimmomatic',
-        default='SLIDINGWINDOW:4:20\ MINLEN:50',
-        metavar='<options>'
-    )
-
-    main_parser.add_argument(
         '--sequencer-source',
         help='NexteraPE, TruSeq2, TruSeq3, none',
         dest='sequencer_source',
@@ -344,7 +336,7 @@ def main():
 
         #fill-in Namespace for attributes which only appear in specific subparsers
         params=['pe1', 'pe2', 'n_cores', 'max_memory', 'genome_dir', 'ref', 'gff', 'fasta_extension',
-                'output', 'conda_prefix', 'trimmomatic', 'sequencer_source',
+                'output', 'conda_prefix', 'sequencer_source',
                 'kingdom', 'workflow', 'other_db' ,'gDNA','skip_qc', 'min_read_aligned_percent', 'min_read_percent_identity']
         for i in params:
             try:
@@ -365,7 +357,6 @@ def main():
                                 args.fasta_extension,
                                 args.output,
                                 args.conda_prefix,
-                                args.trimmomatic,
                                 args.sequencer_source,
                                 args.kingdom,
                                 args.workflow,
@@ -454,7 +445,6 @@ class transcriptm:
                  fasta_extension="none",
                  output=".",
                  conda_prefix=Config.get_conda_path(),
-                 trimmomatic = "SLIDINGWINDOW:4:20\ MINLEN:50",
                  sequencer_source = "TruSeq3",
                  kingdom="Bacteria",
                  workflow="none",
@@ -475,7 +465,6 @@ class transcriptm:
         self.fasta_extension = fasta_extension
         self.output = output
         self.conda_prefix = conda_prefix
-        self.trimmomatic = trimmomatic
         self.sequencer_source = sequencer_source
         self.kingdom = kingdom
         self.workflow = workflow
@@ -519,8 +508,6 @@ class transcriptm:
             self.output = os.path.abspath(self.output)
         if self.fasta_extension != "none":
             self.fasta_extension = str(self.fasta_extension)
-        if self.trimmomatic != "SLIDINGWINDOW:4:20\ MINLEN:50":
-            self.trimmomatic = self.trimmomatic
         if self.sequencer_source != "TruSeq3":
             self.sequencer_source = self.sequencer_source
         if self.kingdom != "Bacteria":
@@ -547,7 +534,6 @@ class transcriptm:
         conf["gff"] = self.gff
         conf["fasta_extension"] = self.fasta_extension
         conf["output"] = self.output
-        conf["trimmomatic"] = self.trimmomatic
         conf["sequencer_source"] = self.sequencer_source
         conf["kingdom"] = self.kingdom
         conf["workflow"] = self.workflow

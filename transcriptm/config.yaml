@@ -16,8 +16,6 @@ fasta_extension:
     fna
 output:
     none
-trimmomatic:
-    MINLEN:60 ILLUMINACLIP:/-SE.fa:2:30:10 SLIDINGWINDOW:4:20 MINLEN:50
 sequencer_source:
     TruSeq3-PE
 kingdom:
