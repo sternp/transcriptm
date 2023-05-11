@@ -50,7 +50,7 @@ elif other_db != "none" and skip_qc != True:
         --reorder \
         --remove-intermediate-output \
         --bypass-trf \
-		--run-trim-repetitive \
+	--run-trim-repetitive \
         --decontaminate-pairs strict &&
 
         mkdir qc/clean_reads &&
@@ -86,7 +86,7 @@ elif other_db == "none" and skip_qc != True:
         --run-fastqc-end \
         --reorder \
         --bypass-trf \
-		--run-trim-repetitive \
+	--run-trim-repetitive \
         --remove-intermediate-output &&
 
         mkdir qc/clean_reads &&
