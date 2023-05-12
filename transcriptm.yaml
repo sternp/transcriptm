@@ -16,7 +16,7 @@ dependencies:
   - bbmap=38.93
   - bedops
   - bedtools
-  - bioconductor-strandcheckr = 1.12.0
+  - bioconductor-strandcheckr
   - coverm = 0.6
   - dashing
   - datamash
