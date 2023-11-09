@@ -22,7 +22,7 @@ subprocess.Popen(
 	"samtools view -b -f 64 -F 32 coverm_filter/combined_reference_filtered.bam > detect_contam/fwd2.bam && "
 	"samtools merge -f detect_contam/fwd.bam detect_contam/fwd1.bam detect_contam/fwd2.bam && "
 	"samtools index detect_contam/fwd.bam", shell=True).wait()
-	
+
 
 #identify genomes with antisense reads. calculates median antisense coverage across all genes in a genome (fwd strand)...
 #...then extracts all contigs per genome for use in strandCheckR
@@ -51,8 +51,8 @@ subprocess.Popen(
 	"samtools faidx annotate/combined_reference.fna && "
 	"awk -v FS=\"\t\" -v OFS=\"\t\" '{{print $1 FS \"0\" FS ($2-1)}}' annotate/combined_reference.fna.fai > annotate/combined_reference.bed && "
 	"fgrep -w -f detect_contam/contaminated_contigs_list annotate/combined_reference.bed > detect_contam/contaminated_contigs.bed && "
-	"fgrep -w -f detect_contam/non-contaminated_contigs_list annotate/combined_reference.bed > detect_contam/non-contaminated_contigs.bed && "
-
+	"fgrep -w -f detect_contam/non-contaminated_contigs_list annotate/combined_reference.bed > detect_contam/non-contaminated_contigs.bed", shell=True).wait()
+subprocess.Popen(
 	"samtools view -bh -L detect_contam/contaminated_contigs.bed coverm_filter/combined_reference_filtered.bam > detect_contam/contam_contigs.bam && "
 	"samtools view -bh -L detect_contam/non-contaminated_contigs.bed coverm_filter/combined_reference_filtered.bam > detect_contam/non-contam_contigs.bam && "
 	"samtools index detect_contam/contam_contigs.bam && "
@@ -62,4 +62,3 @@ subprocess.Popen(
 subprocess.Popen(
 	"rm detect_contam/temp*  detect_contam/fwd1* detect_contam/fwd2* && "
 	"touch detect_contam/done", shell=True).wait()
-

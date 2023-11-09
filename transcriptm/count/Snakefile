@@ -212,7 +212,24 @@ rule feature_count:
 
         "sed -i '1d' feature_count/feature_count_table && "
 
+        "featureCounts \
+            -a {params.gff} \
+            -o feature_count/feature_count_table_fwd \
+            -F GTF \
+            -T {threads} \
+            -p \
+            -M \
+            -s 1 \
+            --fraction \
+            -t 'CDS' \
+            --extraAttributes 'gene,product,db_xref,Dbxref,inference,UniProtKB' \
+            -g 'ID' \
+            {params.bam} && "
+
+        "sed -i '1d' feature_count/feature_count_table_fwd && "
+
         "printf 'Read count output available at: '$PWD'/feature_count/feature_count_table\n\n' && "
+        "printf 'A forward strand read count (for non-Illumina data) is also available at: '$PWD'/feature_count/feature_count_table_fwd\n\n' && "
         #"ln -sf feature_count/feature_count_table feature_count_table  && "
 
         "touch feature_count/done"
