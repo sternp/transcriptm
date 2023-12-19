@@ -50,7 +50,7 @@ elif other_db != "none" and skip_qc != True:
         --reorder \
         --remove-intermediate-output \
         --bypass-trf \
-	--run-trim-repetitive \
+	    --run-trim-repetitive \
         --decontaminate-pairs strict &&
 
         mkdir qc/clean_reads &&
@@ -86,7 +86,7 @@ elif other_db == "none" and skip_qc != True:
         --run-fastqc-end \
         --reorder \
         --bypass-trf \
-	--run-trim-repetitive \
+	    --run-trim-repetitive \
         --remove-intermediate-output &&
 
         mkdir qc/clean_reads &&
@@ -108,7 +108,7 @@ elif other_db == "none" and skip_qc != True:
 
         "repair.sh in1=qc/clean_reads/R1/unordered.fastq in2=qc/clean_reads/R2/unordered.fastq out1=qc/clean_reads/R1/reordered_R1.fastq out2=qc/clean_reads/R2/reordered_R2.fastq && "
 
-        "gzip qc/clean_reads/R1/reordered_R1.fastq && "
+        "gzip qc/clean_reads/R1/reordered_R1.fastq & "
         "gzip qc/clean_reads/R2/reordered_R2.fastq && "
 
         "rm qc/clean_reads/R1/unordered.fastq && "
