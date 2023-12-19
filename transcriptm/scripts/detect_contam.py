@@ -56,9 +56,9 @@ command = (
     "paste detect_contam/temp3_genomeID detect_contam/temp3 > detect_contam/temp4 && "
     "sort -k1,1 detect_contam/temp4 > detect_contam/temp4_sort && "
     "cat detect_contam/temp4_sort | datamash -s -g1 median 4 > detect_contam/temp5 && "
-    "awk -F\"\t\" '$2 > {0} {{print $1}}' detect_contam/temp5 > detect_contam/contaminated_genome_list && "
+    "awk -F\"\t\" '$2 > %s {{print $1}}' detect_contam/temp5 > detect_contam/contaminated_genome_list && "
     "sort -k1,1 detect_contam/contaminated_genome_list > detect_contam/contaminated_genome_list_sort && "
-    "join  detect_contam/contaminated_genome_list_sort detect_contaminated_genome_list_sort_contam/temp4_sort > detect_contam/temp6 && "
+    "join detect_contam/contaminated_genome_list_sort detect_contam/temp4_sort > detect_contam/temp6 && "
     "cat detect_contam/temp6 | awk '{{print $2}}' | sort -u > detect_contam/contaminated_contigs_list" % (gDNA_single_strand)
 )
 try:
