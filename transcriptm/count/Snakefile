@@ -232,7 +232,7 @@ rule feature_count:
         "printf 'A forward strand read count (for non-Illumina data) is also available at: '$PWD'/feature_count/feature_count_table_fwd\n\n' && "
         #"ln -sf feature_count/feature_count_table feature_count_table  && "
 
-        "rm detect_contam/temp*  detect_contam/fwd1* detect_contam/fwd2* && "
+        #"rm detect_contam/temp* detect_contam/fwd1* detect_contam/fwd2* && "
 
         "touch feature_count/done"
 
