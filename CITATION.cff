@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Sternes
+    given-names: Peter R.
+    orcid: https://orcid.org/0000-0002-4456-150X
+  - family-names: Tyson
+    given-names: Gene W.
+    orcid: https://orcid.org/0000-0001-8559-9427
+title: "TranscriptM: A metatranscriptome bioinformatics pipeline including metagenome contamination correction"
+version: 0.3.1
+doi: 110.5281/zenodo.11090118
+date-released: 2024-04-30
