@@ -11,6 +11,8 @@ transcriptm.egg-info/SOURCES.txt
 transcriptm.egg-info/dependency_links.txt
 transcriptm.egg-info/entry_points.txt
 transcriptm.egg-info/top_level.txt
+transcriptm/__pycache__/__init__.cpython-310.pyc
+transcriptm/__pycache__/transcriptm.cpython-310.pyc
 transcriptm/bin/Trimmomatic-0.39/LICENSE
 transcriptm/bin/Trimmomatic-0.39/trimmomatic-0.39.jar
 transcriptm/bin/Trimmomatic-0.39/adapters/NexteraPE-PE.fa
@@ -21,6 +23,8 @@ transcriptm/bin/Trimmomatic-0.39/adapters/TruSeq3-PE.fa
 transcriptm/bin/Trimmomatic-0.39/adapters/TruSeq3-SE.fa
 transcriptm/config/__init__.py
 transcriptm/config/config.py
+transcriptm/config/__pycache__/__init__.cpython-310.pyc
+transcriptm/config/__pycache__/config.cpython-310.pyc
 transcriptm/count/Snakefile
 transcriptm/scripts/.Rhistory
 transcriptm/scripts/annotate.py

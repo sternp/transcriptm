@@ -178,7 +178,7 @@ rule finalise_bam:
         "if [ -s detect_contam/contaminated_contigs_list ];  then  samtools merge detect_contam/non-contam_contigs.bam filter_contam/decontam_contigs.bam -o final_bam/final.bam; else ln -s $PWD/coverm_filter/combined_reference_filtered.bam final_bam/final.bam; fi && "
         #"if [ -s detect_contam/contaminated_contigs_list ]; then samtools merge detect_contam/non-contam_contigs.bam filter_contam/decontam_contigs.bam -o final_bam/final.bam ; fi && "
         "samtools index final_bam/final.bam && "
-        "rm detect_contam/*.bam* && "
+#        "rm detect_contam/*.bam* && "
         "touch final_bam/done"
 
 rule feature_count:

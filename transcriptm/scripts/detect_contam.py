@@ -50,13 +50,13 @@ except subprocess.CalledProcessError as e:
 command = (
     "bedtools coverage -hist -b detect_contam/fwd.bam -a detect_contam/CDS.rev.bed > detect_contam/temp1 && "
     "sed -i '/^all/d' detect_contam/temp1 && "
-    "awk -F\"\t\" '{{print $1 \"\t\" $4 \"\t\" $11 * $12 / $13}}' detect_contam/temp1 > detect_contam/temp2 && "
-    "cat detect_contam/temp2 | datamash -s -g1,2 sum 3 > detect_contam/temp3 && "  # sum the values from bedtools hist to get the total coverage
+    "awk -F\"\t\" '{{print $1 \"\t\" $2 \"\t\" $3 \"\t\" $11 * $12 / $13}}' detect_contam/temp1 > detect_contam/temp2 && "
+    "cat detect_contam/temp2 | datamash -s -g1,2,3 sum 4 > detect_contam/temp3 && "  # sum the values from bedtools hist to get the total coverage
     "cat detect_contam/temp3 | awk '{{print $1}}' | rev | cut -d '_' -f2- | rev > detect_contam/temp3_genomeID && "  # get genome name, trims the last '_' separated field which represents contig number.
     "paste detect_contam/temp3_genomeID detect_contam/temp3 > detect_contam/temp4 && "
     "sort -k1,1 detect_contam/temp4 > detect_contam/temp4_sort && "
-    "cat detect_contam/temp4_sort | datamash -s -g1 median 4 > detect_contam/temp5 && "
-    "awk -F\"\t\" '$2 > %s {{print $1}}' detect_contam/temp5 > detect_contam/contaminated_genome_list && "
+    "cat detect_contam/temp4_sort | datamash -s -g1 median 5 > detect_contam/temp5 && "
+    "awk -F\"\t\" '$2 >= %s {{print $1}}' detect_contam/temp5 > detect_contam/contaminated_genome_list && "
     "sort -k1,1 detect_contam/contaminated_genome_list > detect_contam/contaminated_genome_list_sort && "
     "join detect_contam/contaminated_genome_list_sort detect_contam/temp4_sort > detect_contam/temp6 && "
     "cat detect_contam/temp6 | awk '{{print $2}}' | sort -u > detect_contam/contaminated_contigs_list" % (gDNA_single_strand)
@@ -90,7 +90,8 @@ command = (
 try:
     subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
 except subprocess.CalledProcessError as e:
-    print(f"An error occurred: {e}")
+#    print(f"An error occurred: {e}")
+	":"
 command = (
 	"samtools view -bh -L detect_contam/contaminated_contigs.bed coverm_filter/combined_reference_filtered.bam > detect_contam/contam_contigs.bam && "
 	"samtools view -bh -L detect_contam/non-contaminated_contigs.bed coverm_filter/combined_reference_filtered.bam > detect_contam/non-contam_contigs.bam && "
