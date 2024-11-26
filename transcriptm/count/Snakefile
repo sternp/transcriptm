@@ -34,11 +34,12 @@ rule all:
         "annotate/done",
         "coverm/done",
         "coverm_filter/done",
-        "detect_contam/done",
-        "filter_contam/done",
-        "final_bam/done",
+#        "detect_contam/done",
+#        "filter_contam/done",
+#        "final_bam/done",
         "feature_count/done",
-        "final_table/done"
+        "final_table/done",
+        "final_table_corrected/done"
     threads:
         config["n_cores"]
     resources:
@@ -88,6 +89,7 @@ rule coverm:
     message:
         "Aligning reads to reference sequences..."
     shell:
+        "samtools faidx annotate/combined_reference.fna && "
         "echo R1 = {params.qc_reads_1} && "
         "echo R2 = {params.qc_reads_2} && "
         "coverm make -r {params.fna_file} -1 {params.qc_reads_1} -2 {params.qc_reads_2} -t {threads} -o coverm && "
@@ -122,68 +124,66 @@ rule coverm_filter:
         "samtools index coverm_filter/combined_reference_filtered.bam && "
         "touch coverm_filter/done"
 
-rule detect_contam:
-    input:
-        'coverm_filter/done'
-    output:
-        "detect_contam/done"
-    threads:
-        config["n_cores"]
-    resources:
-        mem_gb = config["max_memory"]
-    params:
-        gDNA = int(config["gDNA"]),
-    message:
-        "Threshold for gDNA contamination set at {params.gDNA}x median gDNA read coverage per genome\nDetecting gDNA contamination..."
-    script:
-        "../scripts/detect_contam.py"
-
-
-rule filter_contam:
-    input:
-        "detect_contam/done"
-    output:
-        "filter_contam/done"
-    threads:
-        config["n_cores"]
-    resources:
-        mem_gb = config["max_memory"]
-    params:
-        in_bam = 'detect_contam/contam_contigs.bam',
-        out_bam = 'filter_contam/decontam_contigs.bam',
-        gff = 'annotate/combined_reference.gff',
-        overlap_list = 'detect_contam/overlappedORFs.bed',
-        contam_list = 'detect_contam/contaminated_contigs_list'
-    message:
-        "Filtering gDNA contamination, if any, from BAM..."
-    script:
-        "../scripts/strandcheckr.R"
-
-
-rule finalise_bam:
-    input:
-        "filter_contam/done"
-    output:
-        "final_bam/done"
-    threads:
-        config["n_cores"]
-    resources:
-        mem_gb = config["max_memory"]
+#rule detect_contam:
+#    input:
+#        'coverm_filter/done'
+#    output:
+#        "detect_contam/done"
+#    threads:
+#        config["n_cores"]
+#    resources:
+#        mem_gb = config["max_memory"]
 #    params:
-#        contam_bam = 'coverm_filter/combined_reference_filtered.bam',
-#        non-contam_bam = 'filter_contam/decontaminated.bam'
-    message:
-        "Merging decontaminated contigs with other contigs..."
-    shell:
-        "if [ -s detect_contam/contaminated_contigs_list ];  then  samtools merge detect_contam/non-contam_contigs.bam filter_contam/decontam_contigs.bam -o final_bam/final.bam; else ln -s $PWD/coverm_filter/combined_reference_filtered.bam final_bam/final.bam; fi && "
-        #"if [ -s detect_contam/contaminated_contigs_list ]; then samtools merge detect_contam/non-contam_contigs.bam filter_contam/decontam_contigs.bam -o final_bam/final.bam ; fi && "
-        "samtools index final_bam/final.bam && "
-#        "rm detect_contam/*.bam* && "
-        "touch final_bam/done"
+##    message:
+#        "Threshold for gDNA contamination set at {params.gDNA}x median gDNA read coverage per genome\nDetecting gDNA contamination..."
+#    script:
+#        "../scripts/detect_contam.py"
+#
+#
+#rule filter_contam:
+#    input:
+#        "detect_contam/done"
+#    output:
+#        "filter_contam/done"
+#    threads:
+#        config["n_cores"]
+#    resources:
+#        mem_gb = config["max_memory"]
+#    params:
+#        in_bam = 'detect_contam/contam_contigs.bam',
+#        out_bam = 'filter_contam/decontam_contigs.bam',
+#        gff = 'annotate/combined_reference.gff',
+#        overlap_list = 'detect_contam/overlappedORFs.bed',
+#        contam_list = 'detect_contam/contaminated_contigs_list'
+#    message:
+##    script:
+#        "../scripts/strandcheckr.R"
+#
+#
+#rule finalise_bam:
+#    input:
+#        "filter_contam/done"
+#    output:
+#        "final_bam/done"
+#    threads:
+#        config["n_cores"]
+#    resources:
+#        mem_gb = config["max_memory"]
+##    params:
+##       contam_bam = 'coverm_filter/combined_reference_filtered.bam',
+##      non-contam_bam = 'filter_contam/decontaminated.bam'
+#    message:
+#        "Merging decontaminated contigs with other contigs..."
+#    shell:
+#        "if [ -s detect_contam/contaminated_contigs_list ];  then  samtools merge detect_contam/non-contam_contigs.bam filter_contam/decontam_contigs.bam -o final_bam/final.bam; else ln -s $PWD/coverm_filter/combined_reference_filtered.bam final_bam/final.bam; fi && "
+#        #"if [ -s detect_contam/contaminated_contigs_list ]; then samtools merge detect_contam/non-contam_contigs.bam filter_contam/decontam_contigs.bam -o final_bam/final.bam ; fi && "
+#        "samtools index final_bam/final.bam && "
+##        "rm detect_contam/*.bam* && "
+#        "touch final_bam/done"
 
 rule feature_count:
     input:
-        "final_bam/done"
+        "coverm_filter/done"
     output:
         "feature_count/done"
     threads:
@@ -191,7 +191,7 @@ rule feature_count:
     resources:
         mem_gb = config["max_memory"]
     params:
-        bam = 'final_bam/final.bam',
+        bam = 'coverm_filter/combined_reference_filtered.bam',
         gff = 'annotate/combined_reference.gff'
     message:
         "Counting reads..."
@@ -204,6 +204,7 @@ rule feature_count:
             -p \
             -M \
             -s 2 \
+            -B \
             --fraction \
             -t 'CDS' \
             --extraAttributes 'gene,product,db_xref,Dbxref,inference,UniProtKB' \
@@ -211,6 +212,30 @@ rule feature_count:
             {params.bam} && "
 
         "sed -i '1d' feature_count/feature_count_table && "
+
+        "sort -k1,1 -k4,4n annotate/combined_reference.gff > annotate/combined_reference_sorted.gff && "
+
+        "bedtools complement -i annotate/combined_reference_sorted.gff -g annotate/combined_reference.fna.fai > annotate/intergenic.bed && "
+
+#        "bedtools complement -i {params.gff} -g annotate/combined_reference.fna.fai > annotate/intergenic.bed && " #get intergeneic regions
+
+    #    "awk 'BEGIN {{OFS=""\t""}} {{print $1"".""$2"".""$3, $1,$2,$3,"".""}}' annotate/intergenic.bed > annotate/intergenic.saf && "
+        """awk -v OFS="\\t" '{{ print $1 "." $2 "." $3, $1, $2, $3, "." }}' annotate/intergenic.bed > annotate/intergenic.saf &&  """
+
+
+        #only count if read 100% aligns with intergenic region.
+        "featureCounts \
+            -a annotate/intergenic.saf \
+            -o feature_count/intergenic_count_table \
+            -F SAF \
+            -T {threads} \
+            -p \
+            -s 2 \
+            -B \
+            --fracOverlap 1 \
+            {params.bam} && "
+
+        "sed -i '1d' feature_count/intergenic_count_table && "
 
         "featureCounts \
             -a {params.gff} \
@@ -220,6 +245,7 @@ rule feature_count:
             -p \
             -M \
             -s 1 \
+            -B \
             --fraction \
             -t 'CDS' \
             --extraAttributes 'gene,product,db_xref,Dbxref,inference,UniProtKB' \
@@ -228,8 +254,24 @@ rule feature_count:
 
         "sed -i '1d' feature_count/feature_count_table_fwd && "
 
-        "printf 'Read count output available at: '$PWD'/feature_count/feature_count_table\n\n' && "
-        "printf 'A forward strand read count (for non-Illumina data) is also available at: '$PWD'/feature_count/feature_count_table_fwd\n\n' && "
+        "featureCounts \
+            -a annotate/intergenic.saf \
+            -o feature_count/intergenic_count_fwd_table \
+            -F SAF \
+            -T {threads} \
+            -p \
+            -s 2 \
+            -B \
+            --fracOverlap 1 \
+            {params.bam} && "
+
+        "sed -i '1d' feature_count/intergenic_count_fwd_table && "
+
+        "awk '$6 >= 500' feature_count/intergenic_count_fwd_table > feature_count/intergenic_count_fwd_table_500 && " #Intergenic regions needs to be >500bp to be included.
+        "awk '$6 >= 500' feature_count/intergenic_count_table > feature_count/intergenic_count_table_500 && " #ntergenic regions needs to be >500bp to be included.
+
+#        "printf 'Read count output available at: '$PWD'/feature_count/feature_count_table\n\n' && "
+#        "printf 'A forward strand read count (for non-Illumina data) is also available at: '$PWD'/feature_count/feature_count_table_fwd\n\n' && "
         #"ln -sf feature_count/feature_count_table feature_count_table  && "
 
         #"rm detect_contam/temp* detect_contam/fwd1* detect_contam/fwd2* && "
@@ -243,7 +285,15 @@ rule final_output:
         "final_table/done"
     params:
         in_table = 'feature_count/feature_count_table',
+        in_table_intergenic = 'feature_count/intergenic_count_table_500',
+        #in_table_intergenic = 'feature_count/intergenic_count_table',
         out_table = 'final_table/rawcount_tpm_table.txt',
+        out_table_intergenic = 'final_table/intergenic_rawcount_tpm_table.txt',
+        in_table_fwd = 'feature_count/feature_count_table_fwd',
+        in_table_fwd_intergenic = 'feature_count/intergenic_count_fwd_table_500',
+        #in_table_fwd_intergenic = 'feature_count/intergenic_count_fwd_table',
+        out_table_fwd = 'final_table/rawcount_fwd_tpm_table.txt',
+        out_table_fwd_intergenic = 'final_table/intergenic_rawcount_fwd_tpm_table.txt',
         out_touch = 'final_table/done'
     threads:
         config["n_cores"]
@@ -253,3 +303,17 @@ rule final_output:
         "Calculating TPM from raw counts and formatting final table..."
     script:
         "../scripts/calculate_tpm.py"
+
+rule apply_correction:
+    input:
+        "final_table/done"
+    output:
+        "final_table_corrected/done"
+    threads:
+        config["n_cores"]
+    resources:
+        mem_gb = config["max_memory"]
+    message:
+        "Adjusting the raw count and TPM values to account for gDNA contamination..."
+    script:
+        "../scripts/adjust_final_tables.py"

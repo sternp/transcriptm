@@ -20,7 +20,7 @@
 from transcriptm.__init__ import __version__
 import transcriptm.config.config as Config
 __author__ = "Peter Sternes"
-__copyright__ = "Copyright 2022"
+__copyright__ = "Copyright 2024"
 __credits__ = ["Peter Sternes"]
 __license__ = "GPL3"
 __maintainer__ = "Peter Sternes"
@@ -75,9 +75,9 @@ def phelp():
 
         A  metatranscriptome bioinformatics pipeline including metagenome contamination correction
 
-        count - Full pipeline. Raw reads -> counts per gene. Can skip the QC and/or fasta annotation steps.
+        count - Full pipeline. Raw reads -> counts/TPM per gene. Can skip the QC and/or fasta annotation steps.
 
-        Type 'transcriptm {count,assemble} --help' for specific information
+        Type 'transcriptm count --help' for specific information
 
 """
 )
@@ -230,9 +230,6 @@ def main():
 
     Specifying -g will concatenate a directory of .fna genomes into a single ref sequence and annotate with prokka (time intensive)
     Alternatively, you can use pre-contructed files via --ref <combined_reference.fna> and --gff <combined_reference.gff>
-
-    Please note, currently the required format for the contig's FASTA headers are <genomeID>_<number>.
-    For example: >Ardenticatenaceae-ID1234_00001, >Ardenticatenaceae-ID1234_00002...etc
     ''')
 
     parser_count.add_argument(
@@ -299,13 +296,6 @@ def main():
         metavar='<num>'
     )
 
-    parser_count.add_argument(
-        '--gDNA',
-        help='Median x-fold gDNA coverage to enable gDNA contamination correction.',
-        dest='gDNA',
-        default=1,
-        metavar='<num>'
-    )
 
 
     ############################## Parsing input ##############################
@@ -337,7 +327,7 @@ def main():
         #fill-in Namespace for attributes which only appear in specific subparsers
         params=['pe1', 'pe2', 'n_cores', 'max_memory', 'genome_dir', 'ref', 'gff', 'fasta_extension',
                 'output', 'conda_prefix', 'sequencer_source',
-                'kingdom', 'workflow', 'other_db' ,'gDNA','skip_qc', 'min_read_aligned_percent', 'min_read_percent_identity']
+                'kingdom', 'workflow', 'other_db' ,'skip_qc', 'min_read_aligned_percent', 'min_read_percent_identity']
         for i in params:
             try:
                 getattr(args, i)
@@ -364,7 +354,6 @@ def main():
                                 args.skip_qc,
                                 args.min_read_aligned_percent,
                                 args.min_read_percent_identity,
-                                args.gDNA,
                                 args)
 
         processor.make_config()
@@ -452,7 +441,6 @@ class transcriptm:
                  skip_qc=False,
                  min_read_aligned_percent=0.90,
                  min_read_percent_identity=0.95,
-                 gDNA=1,
                  args=None
                  ):
         self.pe1 = pe1
@@ -472,7 +460,6 @@ class transcriptm:
         self.skip_qc = skip_qc
         self.min_read_aligned_percent = min_read_aligned_percent,
         self.min_read_percent_identity = min_read_percent_identity,
-        self.gDNA = gDNA
 
     def make_config(self):
         """
@@ -541,7 +528,6 @@ class transcriptm:
         conf["skip_qc"] = self.skip_qc
         conf["min_read_aligned_percent"] = self.min_read_aligned_percent
         conf["min_read_percent_identity"] = self.min_read_percent_identity
-        conf["gDNA"] = self.gDNA
 
         with open(self.config, "w") as f:
             yaml.dump(conf, f)

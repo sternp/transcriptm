@@ -12,7 +12,9 @@ if genome_dir != "none" and fna == "none" and gff == 'none':
 		"echo 'Running annotation (time consuming), please standby...' && "
 		"cat %s > annotate/combined_reference.fna && "
 		"ls %s | parallel -j %s prokka --metagenome --cpus 1 --kingdom %s {} --outdir annotate/{/.}.prokka --force && "
-		"find . -name \'*.gff\' -exec cat {} + > annotate/out ; mv annotate/out annotate/combined_reference.gff && "
+#		"find . -name \'*.gff\' -exec cat {} + > annotate/out ; mv annotate/out annotate/combined_reference.gff && "
+		"find . -type f -name \'*.gff\' -exec gffread -F -o- {} + > annotate/combined_reference.gff && "
+		"sed -i \'s/Parent=/ID=/\' annotate/combined_reference.gff && "
 		"touch annotate/done" %
 		(genome_dir_path, genome_dir_path, snakemake.threads, kingdom), shell=True).wait()
 
